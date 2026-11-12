@@ -129,6 +129,7 @@ code{font-family:var(--mono);font-size:12.5px;background:var(--soft);padding:1px
 .dcustom input{width:30px;height:26px;padding:0;border:1px solid var(--line);border-radius:6px;background:none}
 #logoPv{height:28px;max-width:160px;object-fit:contain;background:#fff;border:1px solid var(--line);border-radius:6px;padding:3px 6px}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+[hidden]{display:none!important}
 </style>
 </head>
 <body>
@@ -212,15 +213,11 @@ code{font-family:var(--mono);font-size:12.5px;background:var(--soft);padding:1px
   <div class="pane" id="pane-ln" hidden>
     <div class="stack">
       <div class="card stack">
-        <div><label for="endpoint">응답 수집 주소 <span class="hint">처음 한 번만 붙여 넣으면 이 브라우저가 기억합니다</span></label>
+        <div hidden><label for="endpoint">응답 수집 주소 <span class="hint">처음 한 번만 붙여 넣으면 이 브라우저가 기억합니다</span></label>
           <input id="endpoint" placeholder="https://script.google.com/macros/s/…/exec"></div>
-        <div class="status" id="epStatus"></div>
+        <div class="status" id="epStatus" hidden></div>
         <div><label for="link">설문 링크</label><textarea id="link" readonly rows="3" style="font-family:var(--mono);font-size:12px"></textarea></div>
         <div class="row"><button class="btn" id="copyLink">링크 복사</button><a class="btn ghost" id="openLink" href="#" target="_blank" rel="noopener">새 창에서 열어 보기</a><span class="status" id="linkStatus"></span></div>
-        <div class="row" style="align-items:flex-start;gap:14px">
-          <div id="qr" style="background:#fff;padding:10px;border-radius:8px;border:1px solid var(--line);line-height:0"></div>
-          <p class="hint" id="qrNote" style="flex:1;min-width:160px;margin:0">QR은 오른쪽 클릭(휴대폰은 길게 누르기)으로 저장합니다. 문항을 바꾸면 새 링크가 생기고, 응답은 시트의 새 탭에 따로 모입니다. 배포를 시작한 뒤에는 문항을 바꾸지 마세요.</p>
-        </div>
       </div>
 
         <div class="card stack" id="shortBox" style="border-color:var(--navy)">
@@ -230,13 +227,17 @@ code{font-family:var(--mono);font-size:12.5px;background:var(--soft);padding:1px
           <div id="shortOut" hidden class="stack" style="gap:8px">
             <input id="shortLink" readonly style="font-family:var(--mono);font-weight:700;color:var(--navy)">
             <div class="row"><button class="btn sm" id="copyShort">짧은 링크 복사</button><a class="btn ghost sm" id="openShort" href="#" target="_blank" rel="noopener">열어 보기</a></div>
+            <div class="row" style="align-items:center;gap:14px;border-top:1px dashed var(--line);padding-top:10px;margin-top:4px">
+              <div id="qr" style="background:#fff;padding:10px;border-radius:8px;border:1px solid var(--line);line-height:0"></div>
+              <div class="stack" style="flex:1;min-width:160px;gap:8px"><b style="font-size:14px">설문 QR 코드</b><span class="hint" id="qrNote" style="margin:0">포스터·안내문·발표 자료에 넣어 쓰세요.</span><div class="row"><button class="btn sm" id="dlQR">QR 이미지 저장</button></div></div>
+            </div>
             <div style="border-top:1px dashed var(--line);padding-top:10px;margin-top:4px"><label for="reportLink">결과 보고서 링크 <span class="hint">교수님만 보관하세요. 이 링크를 아는 사람은 결과를 볼 수 있습니다</span></label>
               <input id="reportLink" readonly style="font-family:var(--mono);font-size:12px">
               <div class="row" style="margin-top:6px"><button class="btn ghost sm" id="copyReport">보고서 링크 복사</button><a class="btn ghost sm" id="openReport" href="#" target="_blank" rel="noopener" style="text-decoration:none">보고서 열기</a></div></div>
-            <p class="hint" style="margin:0">QR 코드도 짧은 링크로 바뀌었습니다. 짧은 링크로 만든 뒤 문항을 바꾸면, 새 짧은 링크를 다시 만들어야 합니다.</p>
+            <p class="hint" style="margin:0">짧은 링크를 만든 뒤 문항을 바꾸면 새 짧은 링크를 다시 만들어 주세요. 바뀐 설문의 응답은 시트의 새 탭에 따로 모입니다.</p>
           </div>
         </div>
-      <details class="card" id="setup">
+      <details class="card" id="setup" hidden>
         <summary style="cursor:pointer;font-weight:700;color:var(--navy)">처음 한 번만: 응답 시트 연결하기</summary>
         <ol class="guide" style="margin-top:10px">
           <li>응답을 모을 <a href="https://sheets.new" target="_blank" rel="noopener">구글 스프레드시트를 새로 만듭니다</a>. 만족도 설문과 같은 시트를 써도 됩니다.</li>
@@ -258,7 +259,7 @@ code{font-family:var(--mono);font-size:12.5px;background:var(--soft);padding:1px
 (function(){
 const $=s=>document.querySelector(s),$$=s=>Array.from(document.querySelectorAll(s));
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-const GAS="const HEADER_COLOR = '#DAE3F3';\nconst HEADER_FONT = '#0E2A6B';\nconst MAX_CELL = 5000;\nconst REG = '_설문목록';\n\nfunction doPost(e) {\n  const lock = LockService.getScriptLock();\n  lock.waitLock(20000);\n  try {\n    const data = JSON.parse(e.postData.contents);\n    if (data.hp) return json_({ ok: true });\n    if (data.action === 'register') return register_(data);\n    if (!data.id || !Array.isArray(data.headers) || !Array.isArray(data.answers)) {\n      return json_({ ok: false, error: 'bad_request' });\n    }\n\n    const ss = SpreadsheetApp.getActiveSpreadsheet();\n    const sid = String(data.id).replace(/[^\\w-]/g, '');\n    let sh = findTab_(ss, 'surveyId', sid);\n    const name = uniqueName_(ss, shortName_(sid, data.title));\n    const headers = ['응답 시각'].concat(data.headers.map(clean_));\n\n    if (!sh) {\n      sh = ss.insertSheet(name);\n      sh.addDeveloperMetadata('surveyId', sid);\n      sh.getRange(1, 1, 1, headers.length).setValues([headers])\n        .setFontWeight('bold').setBackground(HEADER_COLOR).setFontColor(HEADER_FONT).setWrap(true);\n      sh.setFrozenRows(1);\n      sh.setColumnWidth(1, 150);\n      if (Array.isArray(data.notes) && data.notes.length === data.headers.length) {\n        sh.getRange(1, 2, 1, data.notes.length).setNotes([data.notes.map(clean_)]);\n      }\n      if (Array.isArray(data.codebook) && data.codebook.length) {\n        let cb = findTab_(ss, 'surveyCodebook', sid);\n        if (!cb) {\n          cb = ss.insertSheet(uniqueName_(ss, name + ' 코드북'));\n          cb.addDeveloperMetadata('surveyCodebook', sid);\n        }\n        const cbHead = ['변수명', '섹션', '문항', '구성개념', '역문항', '비고', '응답 형식'];\n        const cbRows = data.codebook.map(function (r) {\n          const row = cbHead.map(function (_, i) { return clean_(r[i]); });\n          return row;\n        });\n        cb.clear();\n        cb.getRange(1, 1, 1, cbHead.length).setValues([cbHead])\n          .setFontWeight('bold').setBackground(HEADER_COLOR).setFontColor(HEADER_FONT);\n        cb.getRange(2, 1, cbRows.length, cbHead.length).setValues(cbRows);\n        cb.setFrozenRows(1);\n        cb.setColumnWidth(3, 420);\n      }\n      ss.getSheets().forEach(function (s) {\n        if (s.getSheetId() !== sh.getSheetId() && s.getLastRow() === 0 && !s.getFormUrl() && ss.getSheets().length > 1) ss.deleteSheet(s);\n      });\n    }\n\n    const row = [new Date()].concat(data.answers.map(function (v) {\n      if (Array.isArray(v)) v = v.join(', ');\n      if (typeof v === 'number') return v;\n      return clean_(v);\n    }));\n    sh.appendRow(row);\n    return json_({ ok: true });\n  } catch (err) {\n    return json_({ ok: false, error: String(err) });\n  } finally {\n    lock.releaseLock();\n  }\n}\n\nfunction doGet(e) {\n  if (e && e.parameter && e.parameter.report) return report_(e.parameter.report, e.parameter.key);\n  const id = e && e.parameter && e.parameter.id;\n  if (!id) return json_({ ok: true, service: 'survey-collector' });\n  const reg = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(REG);\n  const f = reg && reg.getRange('A:A').createTextFinder(String(id).toLowerCase()).matchEntireCell(true).findNext();\n  if (!f) return json_({ ok: false, error: 'not_found' });\n  return json_({ ok: true, survey: JSON.parse(reg.getRange(f.getRow(), 2).getValue()) });\n}\n\nfunction register_(data) {\n  const slug = String(data.slug || '').toLowerCase();\n  if (!/^[a-z0-9][a-z0-9-]{2,39}$/.test(slug) || !data.survey) return json_({ ok: false, error: 'bad_slug' });\n  const json = JSON.stringify(data.survey);\n  if (json.length > 49000) return json_({ ok: false, error: 'too_long' });\n  const ss = SpreadsheetApp.getActiveSpreadsheet();\n  let reg = ss.getSheetByName(REG);\n  if (!reg) {\n    reg = ss.insertSheet(REG);\n    reg.appendRow(['짧은 이름', '설문 내용', '등록 시각']);\n    reg.hideSheet();\n  }\n  const f = reg.getRange('A:A').createTextFinder(slug).matchEntireCell(true).findNext();\n  if (f) return json_({ ok: false, error: 'taken' });\n  reg.appendRow([slug, json, new Date(), String(data.key || '').slice(0, 40)]);\n  return json_({ ok: true });\n}\n\nfunction report_(slug, key) {\n  const ss = SpreadsheetApp.getActiveSpreadsheet();\n  const reg = ss.getSheetByName(REG);\n  const f = reg && reg.getRange('A:A').createTextFinder(String(slug).toLowerCase()).matchEntireCell(true).findNext();\n  if (!f) return json_({ ok: false, error: 'not_found' });\n  const saved = String(reg.getRange(f.getRow(), 4).getValue() || '');\n  if (!saved || saved !== String(key || '')) return json_({ ok: false, error: 'forbidden' });\n  const survey = JSON.parse(reg.getRange(f.getRow(), 2).getValue());\n  const sh = findTab_(ss, 'surveyId', String(survey.id).replace(/[^\\w-]/g, ''));\n  if (!sh || sh.getLastRow() < 1) return json_({ ok: true, survey: survey, headers: [], rows: [] });\n  const vals = sh.getDataRange().getValues();\n  const rows = vals.slice(1).map(function (r) {\n    return r.map(function (v) { return v instanceof Date ? v.toISOString() : v; });\n  });\n  return json_({ ok: true, survey: survey, headers: vals[0], rows: rows });\n}\n\nfunction shortName_(sid, title) {\n  let t = String(title || '설문').replace(/[\\[\\]\\*\\?\\/\\\\:]/g, ' ').replace(/\\s+/g, ' ').trim();\n  t = t.replace(/(에 관한|에 대한)?\\s*(설문 조사|설문조사|설문|조사)$/, '').trim() || '설문';\n  if (t.length > 12) t = t.slice(0, 12).trim() + '…';\n  return t + ' ' + sid.slice(-4);\n}\n\nfunction uniqueName_(ss, base) {\n  let n = base, i = 2;\n  while (ss.getSheetByName(n)) n = base + ' (' + (i++) + ')';\n  return n;\n}\n\nfunction findTab_(ss, key, value) {\n  const found = ss.createDeveloperMetadataFinder().withKey(key).withValue(value).find();\n  for (let i = 0; i < found.length; i++) {\n    const sh = found[i].getLocation().getSheet();\n    if (sh) return sh;\n  }\n  return null;\n}\n\nfunction clean_(v) {\n  let s = String(v == null ? '' : v).slice(0, MAX_CELL);\n  if (/^[=+\\-@]/.test(s)) s = \"'\" + s;\n  return s;\n}\n\nfunction json_(o) {\n  return ContentService.createTextOutput(JSON.stringify(o)).setMimeType(ContentService.MimeType.JSON);\n}\n";
+const GAS="const HEADER_COLOR = '#DAE3F3';\nconst HEADER_FONT = '#0E2A6B';\nconst MAX_CELL = 5000;\nconst REG = '_설문목록';\n\nfunction doPost(e) {\n  const lock = LockService.getScriptLock();\n  lock.waitLock(20000);\n  try {\n    const data = JSON.parse(e.postData.contents);\n    if (data.hp) return json_({ ok: true });\n    if (data.action === 'register') return register_(data);\n    if (!data.id || !Array.isArray(data.headers) || !Array.isArray(data.answers)) {\n      return json_({ ok: false, error: 'bad_request' });\n    }\n\n    const ss = SpreadsheetApp.getActiveSpreadsheet();\n    const sid = String(data.id).replace(/[^\\w-]/g, '');\n    let sh = findTab_(ss, 'surveyId', sid);\n    const name = uniqueName_(ss, shortName_(sid, data.title));\n    const headers = ['응답 시각'].concat(data.headers.map(clean_));\n\n    if (!sh) {\n      sh = ss.insertSheet(name);\n      sh.addDeveloperMetadata('surveyId', sid);\n      sh.getRange(1, 1, 1, headers.length).setValues([headers])\n        .setFontWeight('bold').setBackground(HEADER_COLOR).setFontColor(HEADER_FONT).setWrap(true);\n      sh.setFrozenRows(1);\n      sh.setColumnWidth(1, 150);\n      if (Array.isArray(data.notes) && data.notes.length === data.headers.length) {\n        sh.getRange(1, 2, 1, data.notes.length).setNotes([data.notes.map(clean_)]);\n      }\n      if (Array.isArray(data.codebook) && data.codebook.length) {\n        let cb = findTab_(ss, 'surveyCodebook', sid);\n        if (!cb) {\n          cb = ss.insertSheet(uniqueName_(ss, name + ' 코드북'));\n          cb.addDeveloperMetadata('surveyCodebook', sid);\n        }\n        const cbHead = ['변수명', '섹션', '문항', '구성개념', '역문항', '비고', '응답 형식'];\n        const cbRows = data.codebook.map(function (r) {\n          const row = cbHead.map(function (_, i) { return clean_(r[i]); });\n          return row;\n        });\n        cb.clear();\n        cb.getRange(1, 1, 1, cbHead.length).setValues([cbHead])\n          .setFontWeight('bold').setBackground(HEADER_COLOR).setFontColor(HEADER_FONT);\n        cb.getRange(2, 1, cbRows.length, cbHead.length).setValues(cbRows);\n        cb.setFrozenRows(1);\n        cb.setColumnWidth(3, 420);\n      }\n      ss.getSheets().forEach(function (s) {\n        if (s.getSheetId() !== sh.getSheetId() && s.getLastRow() === 0 && !s.getFormUrl() && ss.getSheets().length > 1) ss.deleteSheet(s);\n      });\n    }\n\n    const row = [new Date()].concat(data.answers.map(function (v) {\n      if (Array.isArray(v)) v = v.join(', ');\n      if (typeof v === 'number') return v;\n      return clean_(v);\n    }));\n    sh.appendRow(row);\n    return json_({ ok: true });\n  } catch (err) {\n    return json_({ ok: false, error: String(err) });\n  } finally {\n    lock.releaseLock();\n  }\n}\n\nfunction doGet(e) {\n  if (e && e.parameter && e.parameter.admin) return admin_(e.parameter);\n  if (e && e.parameter && e.parameter.report) return report_(e.parameter.report, e.parameter.key);\n  const id = e && e.parameter && e.parameter.id;\n  if (!id) return json_({ ok: true, service: 'survey-collector' });\n  const reg = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(REG);\n  const f = reg && reg.getRange('A:A').createTextFinder(String(id).toLowerCase()).matchEntireCell(true).findNext();\n  if (!f) return json_({ ok: false, error: 'not_found' });\n  return json_({ ok: true, survey: JSON.parse(reg.getRange(f.getRow(), 2).getValue()) });\n}\n\nfunction register_(data) {\n  const slug = String(data.slug || '').toLowerCase();\n  if (!/^[a-z0-9][a-z0-9-]{2,39}$/.test(slug) || !data.survey) return json_({ ok: false, error: 'bad_slug' });\n  const json = JSON.stringify(data.survey);\n  if (json.length > 49000) return json_({ ok: false, error: 'too_long' });\n  const ss = SpreadsheetApp.getActiveSpreadsheet();\n  let reg = ss.getSheetByName(REG);\n  if (!reg) {\n    reg = ss.insertSheet(REG);\n    reg.appendRow(['짧은 이름', '설문 내용', '등록 시각']);\n    reg.hideSheet();\n  }\n  const f = reg.getRange('A:A').createTextFinder(slug).matchEntireCell(true).findNext();\n  if (f) return json_({ ok: false, error: 'taken' });\n  const state = data.bs ? JSON.stringify(data.bs) : '';\n  reg.appendRow([slug, json, new Date(), String(data.key || '').slice(0, 40), state.length < 49000 ? state : '']);\n  return json_({ ok: true });\n}\n\nfunction report_(slug, key) {\n  const ss = SpreadsheetApp.getActiveSpreadsheet();\n  const reg = ss.getSheetByName(REG);\n  const f = reg && reg.getRange('A:A').createTextFinder(String(slug).toLowerCase()).matchEntireCell(true).findNext();\n  if (!f) return json_({ ok: false, error: 'not_found' });\n  const saved = String(reg.getRange(f.getRow(), 4).getValue() || '');\n  if (!saved || saved !== String(key || '')) return json_({ ok: false, error: 'forbidden' });\n  const survey = JSON.parse(reg.getRange(f.getRow(), 2).getValue());\n  const sh = findTab_(ss, 'surveyId', String(survey.id).replace(/[^\\w-]/g, ''));\n  if (!sh || sh.getLastRow() < 1) return json_({ ok: true, survey: survey, headers: [], rows: [] });\n  const vals = sh.getDataRange().getValues();\n  const rows = vals.slice(1).map(function (r) {\n    return r.map(function (v) { return v instanceof Date ? v.toISOString() : v; });\n  });\n  return json_({ ok: true, survey: survey, headers: vals[0], rows: rows });\n}\n\n// 내 설문함: 관리자 비밀번호는 브라우저에서 해시로 바꿔 보내고, 해시만 저장합니다\nfunction admin_(p) {\n  const props = PropertiesService.getScriptProperties();\n  const saved = props.getProperty('ADMIN_HASH');\n  const h = String(p.h || '');\n  if (p.admin === 'status') return json_({ ok: true, hasPw: !!saved });\n  if (p.admin === 'setpw') {\n    if (saved) return json_({ ok: false, error: 'already_set' });\n    if (!/^[0-9a-f]{64}$/.test(h)) return json_({ ok: false, error: 'bad_hash' });\n    props.setProperty('ADMIN_HASH', h);\n    return json_({ ok: true });\n  }\n  if (!saved || h !== saved) return json_({ ok: false, error: 'forbidden' });\n  const ss = SpreadsheetApp.getActiveSpreadsheet();\n  const reg = ss.getSheetByName(REG);\n  if (!reg || reg.getLastRow() < 2) return json_({ ok: true, items: [] });\n  const vals = reg.getRange(2, 1, reg.getLastRow() - 1, Math.max(5, reg.getLastColumn())).getValues();\n  if (p.admin === 'list') {\n    const items = vals.map(function (r) {\n      let sv = {};\n      try { sv = JSON.parse(r[1]); } catch (err) {}\n      const sh = sv.id ? findTab_(ss, 'surveyId', String(sv.id).replace(/[^\\w-]/g, '')) : null;\n      return {\n        slug: r[0], title: sv.t || '', org: sv.o || '', kind: sv.m === 'r' ? 'research' : 'customer',\n        created: r[2] instanceof Date ? r[2].toISOString() : String(r[2] || ''),\n        key: String(r[3] || ''), hasState: !!r[4],\n        responses: sh ? Math.max(0, sh.getLastRow() - 1) : 0, tab: sh ? sh.getName() : '',\n        th: sv.th || ''\n      };\n    }).reverse();\n    return json_({ ok: true, items: items });\n  }\n  if (p.admin === 'state') {\n    const slug = String(p.slug || '').toLowerCase();\n    for (let i = 0; i < vals.length; i++) {\n      if (String(vals[i][0]) === slug) {\n        let sv = {}, st = null;\n        try { sv = JSON.parse(vals[i][1]); } catch (err) {}\n        try { st = vals[i][4] ? JSON.parse(vals[i][4]) : null; } catch (err) {}\n        return json_({ ok: true, survey: sv, state: st });\n      }\n    }\n    return json_({ ok: false, error: 'not_found' });\n  }\n  return json_({ ok: false, error: 'bad_request' });\n}\n\nfunction shortName_(sid, title) {\n  let t = String(title || '설문').replace(/[\\[\\]\\*\\?\\/\\\\:]/g, ' ').replace(/\\s+/g, ' ').trim();\n  t = t.replace(/(에 관한|에 대한)?\\s*(설문 조사|설문조사|설문|조사)$/, '').trim() || '설문';\n  if (t.length > 12) t = t.slice(0, 12).trim() + '…';\n  return t + ' ' + sid.slice(-4);\n}\n\nfunction uniqueName_(ss, base) {\n  let n = base, i = 2;\n  while (ss.getSheetByName(n)) n = base + ' (' + (i++) + ')';\n  return n;\n}\n\nfunction findTab_(ss, key, value) {\n  const found = ss.createDeveloperMetadataFinder().withKey(key).withValue(value).find();\n  for (let i = 0; i < found.length; i++) {\n    const sh = found[i].getLocation().getSheet();\n    if (sh) return sh;\n  }\n  return null;\n}\n\nfunction clean_(v) {\n  let s = String(v == null ? '' : v).slice(0, MAX_CELL);\n  if (/^[=+\\-@]/.test(s)) s = \"'\" + s;\n  return s;\n}\n\nfunction json_(o) {\n  return ContentService.createTextOutput(JSON.stringify(o)).setMimeType(ContentService.MimeType.JSON);\n}\n";
 const BASE_DEFAULT="https://sabsci-lab.com/survey";
 const mem={get(k){try{return localStorage.getItem(k)||""}catch(e){return ""}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
 
@@ -521,7 +522,7 @@ async function makeLink(P){
   const ok=/^https:\/\/script\.google\.com\/macros\/s\/[^/]+\/exec$/.test(ep);
   $("#epStatus").textContent=!ep?"응답 수집 주소가 비어 있습니다. 아래 ‘처음 한 번만’ 안내대로 연결해 주세요.":ok?"응답이 연결된 구글 시트로 모입니다.":"주소 형식을 확인해 주세요. https://script.google.com/macros/s/…/exec 형태여야 합니다.";
   $("#epStatus").className="status"+(ok?"":" err");
-  if(!ep)$("#setup").open=true;
+  
   const now=new Date(),ymd=String(now.getFullYear()).slice(2)+String(now.getMonth()+1).padStart(2,"0")+String(now.getDate()).padStart(2,"0");
   const body={...P,id:"R"+ymd+"-"+hash6(JSON.stringify(P))};
   if(THEME&&THEME!=="#0E2A6B")body.th=THEME;
@@ -531,12 +532,7 @@ async function makeLink(P){
   const url=($("#base").value.trim()||BASE_DEFAULT).replace(/#.*$/,"")+"#"+h;
   $("#link").value=url;$("#openLink").href=url;
   $("#linkStatus").textContent=`설문 ID ${body.id} · 링크 ${url.length.toLocaleString()}자`;
-  clearTimeout(qrT);qrT=setTimeout(()=>{
-    const box=$("#qr");box.innerHTML="";box.style.display="";
-    if(typeof QRCode!=="function"){box.style.display="none";return}
-    try{new QRCode(box,{text:url,width:220,height:220,colorDark:"#0e2a6b",colorLight:"#ffffff",correctLevel:QRCode.CorrectLevel.L})}
-    catch(e){box.style.display="none";$("#qrNote").textContent="문항이 많아 링크가 QR 한 개에 담기지 않습니다. 링크 줄이기 서비스(예: 네이버 me2.do)로 줄인 뒤 QR을 만들어 주세요."}
-  },250);
+  
 }
 
 /* ---------- wiring ---------- */
@@ -557,7 +553,7 @@ $$(".tabs button").forEach(b=>b.onclick=()=>{
   ["pv","cb","ln"].forEach(t=>$("#pane-"+t).hidden=b.dataset.tab!==t);
 });
 $("#code").textContent=GAS;
-$("#endpoint").value=mem.get("rsb_endpoint")||"https://script.google.com/macros/s/AKfycbwHLcYk15dyBXeeLEnEEpRsL7YkopAPLkYKfLNn-JXHk2vuBJ8MTlpL544NSbZxnwc1FA/exec";$("#base").value=mem.get("rsb_base")||BASE_DEFAULT;
+$("#endpoint").value="https://script.google.com/macros/s/AKfycbwHLcYk15dyBXeeLEnEEpRsL7YkopAPLkYKfLNn-JXHk2vuBJ8MTlpL544NSbZxnwc1FA/exec";$("#base").value=BASE_DEFAULT;
 $("#endpoint").addEventListener("input",()=>{mem.set("rsb_endpoint",$("#endpoint").value.trim());update()});
 $("#base").addEventListener("input",()=>{mem.set("rsb_base",$("#base").value.trim());update()});
 $("#copyLink").onclick=async()=>{try{await navigator.clipboard.writeText($("#link").value);$("#linkStatus").textContent="링크를 복사했습니다."}catch(e){$("#link").select();$("#linkStatus").textContent="자동 복사가 막혀 링크를 선택해 두었습니다. Ctrl+C(⌘+C)로 복사하세요."}};
@@ -613,7 +609,7 @@ document.getElementById("mkShort").onclick=async()=>{
   const rkey=keys[slug]||(keys[slug]=Math.random().toString(36).slice(2,8)+Math.random().toString(36).slice(2,8));
   mem.set("rsb_keys",JSON.stringify(keys));
   try{
-    await fetch(ep,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({action:"register",slug,survey:body,key:rkey})});
+    await fetch(ep,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({action:"register",slug,survey:body,key:rkey,bs:getState()})});
     const j=await (await fetch(ep+"?id="+encodeURIComponent(slug))).json();
     if(j.ok&&j.survey&&j.survey.id===body.id){
       const url=(document.getElementById("base").value.trim()||"https://sabsci-lab.com/survey").replace(/#.*$/,"")+"#"+slug;
@@ -629,7 +625,38 @@ document.getElementById("mkShort").onclick=async()=>{
   btn.disabled=false;
 };
 document.getElementById("copyReport").onclick=async()=>{try{await navigator.clipboard.writeText(document.getElementById("reportLink").value);document.getElementById("shortStatus").textContent="보고서 링크를 복사했습니다."}catch(e){document.getElementById("reportLink").select()}};
+document.getElementById("dlQR").onclick=()=>{const box=document.getElementById("qr"),c=box.querySelector("canvas"),im=box.querySelector("img");const src=c?c.toDataURL("image/png"):(im&&im.src);if(!src)return;const pad=document.createElement("canvas"),W=600;pad.width=pad.height=W;const g=pad.getContext("2d");g.fillStyle="#fff";g.fillRect(0,0,W,W);const i=new Image();i.onload=()=>{g.imageSmoothingEnabled=false;g.drawImage(i,40,40,W-80,W-80);const a=document.createElement("a");a.href=pad.toDataURL("image/png");a.download="QR_"+(document.getElementById("shortLink").value.split("#")[1]||"survey")+".png";a.click()};i.src=src};
 document.getElementById("copyShort").onclick=async()=>{try{await navigator.clipboard.writeText(document.getElementById("shortLink").value);document.getElementById("shortStatus").textContent="짧은 링크를 복사했습니다."}catch(e){document.getElementById("shortLink").select()}};
+
+/* ---------- 상태 저장·불러오기 (내 설문함) ---------- */
+function getState(){const f={};FIELDS.concat(["f_desc","f_consent","attText"]).forEach(k=>f[k]=$("#"+k).value);
+  return {v:1,tool:"research",S,sid,f,touched:{desc:!!$("#f_desc").dataset.touched,consent:!!$("#f_consent").dataset.touched},
+    ck:{useConsent:$("#f_useConsent").checked,hideNames:$("#hideNames").checked,attOn:$("#attOn").checked},attSecIdx:S.secs.findIndex(s=>s.id===$("#attSec").value),THEME}}
+function setState(st){
+  if(!st||st.tool!=="research")return false;
+  S=st.S||S;sid=Math.max(sid,st.sid||0);
+  Object.entries(st.f||{}).forEach(([k,v])=>{const el=$("#"+k);if(el)el.value=v});
+  if(st.touched&&st.touched.desc)$("#f_desc").dataset.touched=1;else delete $("#f_desc").dataset.touched;
+  if(st.touched&&st.touched.consent)$("#f_consent").dataset.touched=1;else delete $("#f_consent").dataset.touched;
+  const ck=st.ck||{};$("#f_useConsent").checked=ck.useConsent!==false;$("#hideNames").checked=!!ck.hideNames;$("#attOn").checked=ck.attOn!==false;
+  if(st.THEME){THEME=st.THEME;mem.set("rsb_th",THEME)}
+  autoTexts();renderAll();
+  if(st.attSecIdx>=0&&S.secs[st.attSecIdx]){$("#attSec").value=S.secs[st.attSecIdx].id;update()}
+  renderDesign();return true;
+}
+
+(function(){
+  let raw=null;try{raw=localStorage.getItem("sabsci_load");localStorage.removeItem("sabsci_load")}catch(e){}
+  if(!raw)return;
+  try{const pkt=JSON.parse(raw);
+    if(pkt.logo){LOGO=pkt.logo;mem.set("rsb_lg",LOGO)}else{LOGO="";mem.set("rsb_lg","")}
+    if(setState(pkt.state)){
+      const bar=document.createElement("div");bar.className="wrap";bar.innerHTML=`<div style="margin-top:14px;background:var(--soft);border:1px solid var(--line);border-radius:10px;padding:10px 14px;font-size:13.5px;color:var(--ink)">내 설문함에서 <b>${esc(pkt.title||pkt.slug||"")}</b>을(를) 불러왔습니다. 문항을 고친 뒤 <b>새 짧은 링크</b>로 만들면 새 설문으로 저장되고, 응답도 새 탭에 따로 모입니다.</div>`;
+      document.querySelector("header").after(bar);
+      renderDesign();update();
+    }
+  }catch(e){}
+})();
 
 })();
 </script>
