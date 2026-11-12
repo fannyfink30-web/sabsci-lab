@@ -122,9 +122,10 @@ code{font-family:var(--mono);font-size:12.5px;background:var(--soft);padding:1px
 </style>
 </head>
 <body>
-<header><div class="wrap top">
+<header><div class="wrap top" style="justify-content:space-between"><div class="row" style="gap:12px;flex-wrap:nowrap">
   <div class="mark" aria-hidden="true"></div>
   <div><h1>연구 설문 빌더</h1><p>척도를 골라 구성하면 동의서·변수명·코드북이 갖춰진 연구용 설문 링크가 나오고, 응답은 내 구글 시트에 쌓입니다</p></div>
+</div><a href="/builder" class="btn ghost sm" style="text-decoration:none;white-space:nowrap">← 설문 빌더 홈</a>
 </div></header>
 
 <div class="wrap layout">
@@ -245,6 +246,35 @@ const mem={get(k){try{return localStorage.getItem(k)||""}catch(e){return ""}},se
 
 /* ---------- scale library (번안 예시) ---------- */
 const DOMAINS=[
+ {k:"mine",n:"내 논문 척도",c:[
+  {code:"JIS",n:"직업정보탐색",ref:"이시내·민동원(2026) 한국진로창업경영학회지 · Blau(1993, 1994) 수정",items:["희망하는 직업에 종사하거나 종사했던 사람(들)과 이야기를 나누고 조언을 구하려고 노력해왔다.","온라인을 통해 내가 원하는 직무나 취업에 대한 진로정보를 얻으려고 노력해왔다.","가고 싶은 기업에서 발행하는 정보나 기사, 홍보물 등을 읽고 자료를 수집하려고 노력해왔다.","취업박람회 등 취업 관련 행사나 프로그램에 참여하려고 노력해왔다.","하고 싶은 일과 관련된 자격증·기술을 취득하거나 교육을 받으려 노력해왔다."]},
+  {code:"JPP",n:"취업준비수행",ref:"이시내·민동원(2026) 한국진로창업경영학회지 · Blau(1993, 1994) 수정",items:["나는 교내 취업정보시스템(영웅스토리)을 통해 취업정보 탐색을 하는 편이다.","나는 교내 시스템 이외의 채용플랫폼(예: 잡코리아, 사람인, 자소설닷컴 등)을 통해 취업정보 탐색을 하는 편이다.","나는 현재 학교 내의 취업 관련 프로그램(예: 재맞고 빌드업, 현장실습, 취업 교과, 상담)을 통해 취업준비를 하고 있는 편이다.","나는 현재 학교 외에서 진행하는 프로그램(예: 삼성 청년 SW아카데미, LG 에이머스 등)을 통해 취업준비를 하고 있다.","나는 내 스스로 본격적인 취업준비(자격증 취득, 어학점수 획득 등 취업에 요구되는 자격을 갖추는 준비)를 하고 있다고 생각한다."]},
+  {code:"PINN",n:"지각된 혁신성 (의미차별)",ref:"Heo & Lee(2025) JTAER · Sethi et al.(2001) · 영문 문항 번역",items:[{t:"{대상}은(는) 어떻게 느껴지십니까?",l:["예측 가능하다","새롭다"]},{t:"{대상}은(는) 어떻게 느껴지십니까?",l:["평범하다","독창적이다"]},{t:"{대상}은(는) 어떻게 느껴지십니까?",l:["유용하다","쓸모없다"],r:1},{t:"{대상}은(는) 어떻게 느껴지십니까?",l:["적절하다","부적절하다"],r:1}]},
+  {code:"NIS",n:"정보탐색 욕구",ref:"Heo & Lee(2025) JTAER · Lee et al. · 논문 수록 4문항(원척도 6문항) 번역",items:["{대상}을(를) 보고 더 많은 정보를 찾아보려고 했다.","{대상}에 대한 정보를 더 얻고 싶다.","다른 사람과의 대화에서 {대상}이(가) 언급되면, 더 많은 정보를 얻기 위해 귀 기울일 것이다.","H&B 스토어(올리브영 등)나 매장에 가면 직원에게 {대상}에 대한 정보를 확인하거나 직접 사용해 볼 의향이 있다."]},
+  {code:"ATT",n:"제품 태도",ref:"이시내·민동원(2023) 무역연구; Lee & Min(2023) AMJ; Heo & Lee(2025) · 안아림·민동원(2016)",items:["나는 {대상}에 대하여 긍정적이다.","나는 {대상}에 대하여 호의적이다.","나는 {대상}이(가) 좋다."]},
+  {code:"CUR",n:"지각된 호기심",ref:"이시내·민동원(2023) 무역연구 · Stell & Paden(1999)",items:["나는 {대상}을(를) 보고 관련 제품 정보에 대하여 추가적으로 알고 싶어졌다.","나는 {대상}을(를) 보고 제품에 관한 추가적인 정보 탐색을 하고 싶어졌다.","나는 {대상}을(를) 보고 흥미로움이 유발되었다."]},
+  {code:"AWR",n:"브랜드 인지도",ref:"이시내·민동원(2023) 무역연구; 이시내·민동원(2017) 디지털융복합연구 · Yoo & Donthu(2001)",items:["나는 {대상}의 브랜드명을 들어본 적이 있다.","나는 {대상}을(를) 알고 있다."]},
+  {code:"FAIR",n:"프로모션 공정성 지각 (의미차별)",ref:"이시내·민동원(2023) 인문사회21 · Habel et al.(2016); Chiang & Jang(2007)",items:[{t:"내가 참여한 프로모션에 대하여 생각해 보았을 때 나와 참여 기업의 관계는",l:["불공정하였다","공정하였다"]},{t:"내가 참여한 프로모션은 전반적으로",l:["부적절하다","적절하다"]},{t:"내가 참여한 프로모션에 대해 지금 생각해 보니",l:["비합리적이다","합리적이다"]},{t:"내가 참여한 프로모션에서 나의 시간 할애는",l:["적당하다","적당하지 않다"],r:1},{t:"내가 참여한 프로모션에서 나의 시간 할애는",l:["수용 가능하지 않다","수용 가능하다"]}]},
+  {code:"AUTH",n:"진정성 지각",ref:"이시내·민동원(2023) 인문사회21 · 김상희(2010); Beverland(2005); Harter(2002)",items:["나는 해당 프로모션의 시작부터 종료까지 진정성을 느꼈다.","나는 해당 프로모션이 진심에서 우러나온 노력을 하고 있다고 생각됐다.","해당 기업은 내면에서 우러나온 거래 서비스를 제공하였다는 생각이 든다.","해당 기업과의 상호작용은 시작에서부터 끝까지 인간적인 느낌이 들었다.","해당 기업은 일반적 수준 이상의 서비스를 제공하고 있는 것 같다."]},
+  {code:"PATT",n:"프로모션 태도 (의미차별)",ref:"이시내·민동원(2023) 인문사회21 · 안아림·민동원(2013)",items:[{t:"해당 프로모션은",l:["나쁘다","좋다"]},{t:"해당 프로모션은",l:["부정적이다","긍정적이다"]},{t:"해당 프로모션은",l:["비호의적이다","호의적이다"]}]},
+  {code:"WOMI",n:"구전의도",ref:"이시내·민동원(2023) 인문사회21; 이시내·민동원(2016) 경영학연구 · Harrison-Walker(2001)",items:["나는 {대상}을(를) 다른 사람들에게 자주 언급할 것 같다.","나는 {대상}을(를) 타인들에게 다른 브랜드보다 많이 이야기할 것이다.","나는 다른 사람들에게 {대상}에 대해 말할 기회가 있다면, 꼭 말할 것 같다.","나는 다른 사람들에게 {대상}에 대해 말할 때, 주로 좋은 점을 말할 것 같다."]},
+  {code:"ISL",n:"정보탐색 수준",ref:"Lee & Min(2023) Asia Marketing Journal · Lee et al.(2020) · 영문 문항 번역",items:[{t:"{대상}에 대한 정보를 얻기 위해 기업이 제공하는 제품 사양(상세 정보)을 얼마나 탐색하셨습니까?",l:["전혀 하지 않았다","매우 많이 했다"]},{t:"{대상}에 대한 정보를 얻기 위해 다른 소비자가 올린 온라인 후기를 얼마나 탐색하셨습니까?",l:["전혀 하지 않았다","매우 많이 했다"]},{t:"{대상}에 대한 정보를 얻기 위해 뉴스 등 비교적 중립적인 온라인 자료를 얼마나 탐색하셨습니까?",l:["전혀 하지 않았다","매우 많이 했다"]}]},
+  {code:"CEXP",n:"마케팅 캠페인 노출 빈도",ref:"Lee & Min(2023) AMJ; Heo & Lee(2025) JTAER · 캠페인 채널은 연구에 맞게 수정",items:[{t:"다음 {대상} 캠페인을 얼마나 자주 접하셨습니까? — TV 프로그램 속 PPL",l:["전혀 본 적 없다","매우 자주 봤다"]},{t:"다음 {대상} 캠페인을 얼마나 자주 접하셨습니까? — 홈쇼핑 방송",l:["전혀 본 적 없다","매우 자주 봤다"]},{t:"다음 {대상} 캠페인을 얼마나 자주 접하셨습니까? — 유튜브 광고",l:["전혀 본 적 없다","매우 자주 봤다"]},{t:"다음 {대상} 캠페인을 얼마나 자주 접하셨습니까? — 인스타그램 광고·인플루언서 후기",l:["전혀 본 적 없다","매우 자주 봤다"]},{t:"다음 {대상} 캠페인을 얼마나 자주 접하셨습니까? — 카카오톡 등 모바일 프로모션 메시지",l:["전혀 본 적 없다","매우 자주 봤다"]},{t:"다음 {대상} 캠페인을 얼마나 자주 접하셨습니까? — 공식 온라인몰·매장 프로모션",l:["전혀 본 적 없다","매우 자주 봤다"]}]},
+  {code:"CAGE",n:"인지 연령 (숫자 응답)",ref:"Lee & Min(2023) AMJ · Barak & Schiffman(1981) 등 · 영문 문항 번역. 차이 연령 = 실제 나이 − 네 문항 평균",items:[{t:"나는 ___살처럼 느낀다. (숫자로 적어 주세요)",y:"text"},{t:"나는 ___살처럼 보인다. (숫자로 적어 주세요)",y:"text"},{t:"나는 ___살처럼 행동한다. (숫자로 적어 주세요)",y:"text"},{t:"나의 관심사는 대부분 ___살인 사람의 관심사와 같다. (숫자로 적어 주세요)",y:"text"}]},
+  {code:"SC",n:"사회적 연결감",ref:"이시내·민동원(2021) 정보통신정책연구; Lee & Min(2022) Behavioral Sciences · Lee & Robbins(1995)",items:["나는 주변 사람들과 관계가 원활한 편이다.","나는 주위 사람들과 하나 된 느낌을 받을 때가 많다.",{t:"나는 사람들과 지낼 때 뭔가 거리감을 느끼는 편이다.",r:1},"나는 친구들과 있을 때 함께라는 생각이 든다.",{t:"나는 내 주변 사람들과 연결되어 있다는 느낌이 들지 않는다.",r:1},"나는 내 친구들을 형제나 자매처럼 느낀다.","나는 친구들이나 많은 그룹에 속한 사람 같다.","나는 사람들과 네트워크가 좋은 편이다."]},
+  {code:"EMP",n:"광고 공감",ref:"이시내·민동원(2021) 정보통신정책연구 · Escalas & Stern(2003); 변예경·윤각·조재수(2017)",items:["나는 이 광고 문제가 마치 내 문제인 것처럼 느껴졌다.","나는 이 광고를 볼 때 별 탈 없이 마음을 열 수 있었다.","나에게 이 광고는 먼 느낌보다 가까운 느낌으로 다가온다.","이 광고에 대하여 만족한다."]},
+  {code:"CPI",n:"캠페인 참여의도",ref:"이시내·민동원(2021) 정보통신정책연구; Lee & Min(2022) · 영문 문항 번역",items:[{t:"나는 이 캠페인에 참여하고 싶다.",l:["전혀 참여해 보고 싶지 않다","매우 참여해 보고 싶다"]},{t:"나는 이 캠페인 활동(예: 소등 캠페인)에 참여하고 싶다.",l:["전혀 참여해 보고 싶지 않다","매우 참여해 보고 싶다"]}]},
+  {code:"ECO",n:"친환경 상품 구매의도",ref:"이시내·민동원(2021) 정보통신정책연구; Lee & Min(2022)",items:[{t:"이 친환경 상품을 얼마나 구매하고 싶으십니까?",l:["전혀 구매하고 싶지 않다","매우 구매하고 싶다"]}]},
+  {code:"WARM",n:"따뜻함 조작점검 (의미차별)",ref:"이시내·민동원(2021) 정보통신정책연구; Lee & Min(2022) · 영문 형용사 번역",items:[{t:"방금 읽은 묘사는 어떤 느낌이었습니까?",l:["까다롭다","온화하다"]},{t:"방금 읽은 묘사는 어떤 느낌이었습니까?",l:["예민하다","평화롭다"]},{t:"방금 읽은 묘사는 어떤 느낌이었습니까?",l:["낯설다","친숙하다"]}]},
+  {code:"CTRL",n:"실험 통제 (기분·체감 온도)",ref:"Lee & Min(2022) Behavioral Sciences · 영문 문항 번역",items:[{t:"지금 기분은 어떠십니까?",l:["좋지 않다","매우 좋다"]},{t:"지금 이 공간의 온도는 어떻게 느껴지십니까?",l:["시원하다","따뜻하다"]}]},
+  {code:"THIR",n:"갈증 조작점검",ref:"이시내·민동원(2021) 디지털융복합연구; 이시내·민동원(2022) 인문사회21 · Shalev(2014)",items:["지금 갈증이 느껴진다.","지금 무언가를 마시고 싶다."]},
+  {code:"SCB",n:"자기통제",ref:"이시내·민동원(2021) 디지털융복합연구 17문항(14~17번은 Grasmick et al.(1993), 이시내·민동원(2022)에서 사용) · 역문항 여부는 원척도 기준 확인",items:["나는 유혹에 잘 빠지지 않는다.","나는 나쁜 습관을 끊기가 어렵다.","나는 게으르다.","나는 집중하기가 어렵다.","나는 재미있으면 나에게 해로운 일도 한다.","나에게 좀 더 자제력이 있었으면 좋겠다.","나는 즐겁고 재미있는 것을 하느라 종종 일을 제때 끝내지 못한다.","나는 상황에 적절하지 않은 말을 한다.","나는 장기적인 목표를 향해 효율적으로 일을 진행할 수 있다.","나는 잘못인 줄 알면서도 스스로 그것을 멈추지 못한다.","나는 종종 모든 가능성을 고려해 보지 않고 행동한다.","나는 해가 될 만한 것을 거절한다.","나는 충동적인 사람이라고 생각한다.","나는 어려울 것이라 생각되는 과제를 피하려고 한다.","나는 어떤 것이 복잡해지면 끝내거나 버리려는 경향이 있다.","내 인생에서 가장 큰 기쁨을 가져오는 것들은 가장 쉬운 것들이다.","나는 내 능력의 한계에 다다르게 만드는 힘든 일들을 정말 싫어한다."]},
+  {code:"VIT",n:"지각된 에너지 (주관적 활력)",ref:"이시내·민동원(2022) 인문사회21 · Ryan & Frederick(1997) SVS · 영문 문항 번역",items:["나는 살아 있고 생기가 넘친다고 느낀다.","나는 에너지와 의욕이 있다.",{t:"나는 그다지 활기차지 않다고 느낀다.",r:1},"나는 정신이 맑고 깨어 있다고 느낀다.","나는 매일 새로운 하루가 기대된다.","나는 힘이 넘친다고 느낀다.","때로는 너무 생기가 넘쳐서 터질 것 같다."]},
+  {code:"PBA",n:"지각된 브랜드 진정성",ref:"이시내·민동원(2016) 경영학연구; 이시내·민동원(2017) 디지털융복합연구 · Morhart et al.(2015) · 기대실현(1~2)·지속성(3~6)·진실성(7~10)·상징성(11~14)",items:["{대상}은(는) 소비자와 약속한 가치를 실현시킬 것 같습니까?","{대상}은(는) 당신의 믿음에 보답할 것이라고 생각하십니까?","{대상}은(는) 역사가 있는 브랜드인 것 같습니까?","{대상}은(는) 쇼핑할 때 늘 만날 수 있을 것 같습니까?","{대상}은(는) 시장에서 잘 살아남을 브랜드라고 보여집니까?","{대상}은(는) 트렌드 변화와 무관하게 계속 남을 것 같습니까?","{대상}은(는) 소비자의 선택에 적절히 보답할 브랜드로 보입니까?","{대상}은(는) 나름의 윤리적 원칙이 있다고 생각하십니까?","{대상}의 윤리적 가치가 진실되게 느껴지십니까?","{대상}은(는) 소비자를 잘 배려하고 있다고 생각하십니까?","{대상}은(는) 사람들이 중요하게 생각하는 가치들을 반영하고 있다고 보십니까?","{대상}은(는) 사람들의 삶에 특별한 의미를 더해 줄 것이라고 생각하십니까?","{대상}은(는) 사람들이 진짜 자신의 모습이라고 생각하는 자아를 잘 반영해 줄 수 있는 브랜드라고 생각하십니까?","{대상}은(는) 사람들이 진짜로 중요하다고 생각하는 가치들과 관련되어 있다고 생각하십니까?"]},
+  {code:"EFS",n:"노력 절감",ref:"이시내·민동원(2016) 경영학연구 · Dixon et al.(2010)",items:["내가 앞으로 화장품을 구매할 때 {대상}을(를) 선택하면 화장품 구매에 걸리는 시간이 줄어들 것 같다.","내가 앞으로 화장품을 구매할 때 {대상}을(를) 선택하면 화장품 구매에 지출할 돈을 절약할 수 있을 것 같다.","내가 앞으로 화장품을 구매할 때 {대상}을(를) 선택하면 화장품 구매에 걸리는 고민이 줄어들 것 같다."]},
+  {code:"BTR",n:"브랜드 신뢰",ref:"이시내·민동원(2016) 경영학연구 · Chaudhuri & Holbrook(2001)",items:["{대상}은(는) 믿을 만한 제품일 것 같다.","{대상}은(는) 정직한 브랜드일 것 같다.","{대상}의 제품은 안전할 것 같다.","{대상}에 신뢰가 느껴진다."]},
+  {code:"PIN",n:"구매의도 (단일 문항)",ref:"이시내·민동원(2016) 경영학연구; 이시내·민동원(2017) 디지털융복합연구 · Lee & Min(2010)",items:["얼마나 {대상}의 제품을 구매하고 싶습니까?"]}
+ ]},
  {k:"cons",n:"소비자 행동",c:[
   {code:"SAT",n:"고객만족",ref:"Oliver(1980) 등",items:["전반적으로 {대상}에 만족한다.","{대상}을(를) 선택한 것은 현명한 결정이었다.","{대상}은(는) 나의 기대를 충족시켰다.","{대상}을(를) 이용한 경험은 즐거웠다."]},
   {code:"PI",n:"구매의도",ref:"Dodds, Monroe & Grewal(1991) 등",items:["나는 {대상}을(를) 구매할 의향이 있다.","가까운 시일 안에 {대상}을(를) 구매할 가능성이 높다.","{대상}의 구매를 긍정적으로 고려하겠다."]},
@@ -291,12 +321,12 @@ const DEMO=[
 ];
 
 /* ---------- state ---------- */
-let dom="cons",sid=0;
+let dom="mine",sid=0;
 let S={secs:[],demo:{}};
 const FIELDS=["f_title","f_purpose","f_pi","f_aff","f_mail","f_irb","f_min","f_reward","f_target"];
 function addConstruct(c){
   if(S.secs.some(s=>s.key===c.code))return;
-  S.secs.push({id:"s"+(++sid),key:c.code,prefix:c.code,name:c.n,title:c.n,ref:c.ref,stim:"",rn:false,items:c.items.map(t=>({text:t,rev:false}))});
+  S.secs.push({id:"s"+(++sid),key:c.code,prefix:c.code,name:c.n,title:c.n.replace(/\s*\(.*\)$/,""),ref:c.ref,stim:"",rn:false,items:c.items.map(t=>typeof t==="string"?{text:t,rev:false}:{text:t.t,rev:!!t.r,l:t.l?t.l.slice():null,y:t.y||null})});
 }
 function example(){
   $("#f_title").value="온라인 신선식품 배송서비스 이용 경험에 관한 설문";
@@ -339,7 +369,7 @@ function renderLib(){
   $("#lib").innerHTML=D.c.map(c=>{const used=S.secs.some(s=>s.key===c.code);return `<div class="con">
     <div class="h"><b>${c.n} <span class="code">${c.code}</span></b><button class="btn ${used?"ghost":""} sm" data-add="${c.code}" ${used?"disabled":""}>${used?"추가됨":"추가"}</button></div>
     <span class="ref">${esc(c.ref)} · ${c.items.length}문항</span>
-    <details><summary>문항 보기</summary><ol>${c.items.map(t=>`<li>${esc(fill(t))}</li>`).join("")}</ol></details></div>`}).join("");
+    <details><summary>문항 보기</summary><ol>${c.items.map(t=>typeof t==="string"?`<li>${esc(fill(t))}</li>`:`<li>${esc(fill(t.t))}${t.l?` <span class="hint">[${esc(t.l[0])} ↔ ${esc(t.l[1])}]</span>`:""}${t.r?` <b style="color:var(--red)">R</b>`:""}</li>`).join("")}</ol></details></div>`}).join("");
   $$("#lib [data-add]").forEach(b=>b.onclick=()=>{addConstruct(ALL.find(c=>c.code===b.dataset.add));renderAll()});
 }
 $("#addCustom").onclick=()=>{
@@ -364,7 +394,7 @@ function renderSecs(){
         <label class="toggle" style="font-size:12.5px"><input type="checkbox" data-k="rn" ${s.rn?"checked":""}> 섹션 안 문항 순서 무작위</label></div>
       <textarea data-k="stim" rows="2" placeholder="상황 제시 지문 (선택) — 예: 다음은 최근 이용한 배송서비스를 떠올리며 응답해 주세요." aria-label="상황 제시 지문">${esc(s.stim)}</textarea>
       ${s.items.map((it,ii)=>`<div class="it" data-i="${ii}"><span class="c">${esc(s.prefix)}${ii+1}${it.rev?"_R":""}</span>
-        <input value="${esc(fill(it.text))}" data-ik="text" aria-label="문항">
+        <div style="display:flex;flex-direction:column;gap:4px;min-width:0"><input value="${esc(fill(it.text))}" data-ik="text" aria-label="문항">${it.l?`<div class="row" style="gap:6px;flex-wrap:nowrap"><input value="${esc(it.l[0])}" data-ik="l0" aria-label="왼쪽 끝(1점) 표현" style="font-size:12.5px;padding:4px 8px"><span class="hint">↔</span><input value="${esc(it.l[1])}" data-ik="l1" aria-label="오른쪽 끝(7점) 표현" style="font-size:12.5px;padding:4px 8px"></div>`:""}${it.y==="text"?`<span class="hint">숫자·단답 응답</span>`:""}</div>
         <label class="rev"><input type="checkbox" data-ik="rev" ${it.rev?"checked":""}> 역문항</label>
         <button class="icon" data-del aria-label="문항 삭제">✕</button></div>`).join("")}
       <div><button class="btn ghost sm" data-addi>문항 추가</button></div>
@@ -380,6 +410,7 @@ function renderSecs(){
     el.querySelectorAll(".it").forEach(r=>{
       const it=s.items[+r.dataset.i];
       r.querySelector('[data-ik="text"]').oninput=e=>{it.text=unfill(e.target.value);update()};
+      [0,1].forEach(k=>{const el=r.querySelector('[data-ik="l'+k+'"]');if(el)el.oninput=e=>{it.l[k]=e.target.value;update()}});
       r.querySelector('[data-ik="rev"]').onchange=e=>{it.rev=e.target.checked;renderAll()};
       r.querySelector("[data-del]").onclick=()=>{s.items.splice(+r.dataset.i,1);renderAll()};
     });
@@ -405,7 +436,7 @@ function survey(){
   const hide=$("#hideNames").checked;
   const att=$("#attOn").checked?$("#attSec").value:null;
   const secs=S.secs.map((s,si)=>{
-    const q=s.items.filter(it=>it.text.trim()).map((it,ii)=>({y:"scale",x:fill(it.text).trim(),r:1,c:`${s.prefix}${ii+1}${it.rev?"_R":""}`,k:s.name,v:it.rev?1:0}));
+    const q=s.items.filter(it=>it.text.trim()).map((it,ii)=>({y:it.y||"scale",x:fill(it.text).trim(),r:1,c:`${s.prefix}${ii+1}${it.rev?"_R":""}`,k:s.name,v:it.rev?1:0,l:it.l&&it.l[0]&&it.l[1]?it.l.slice():undefined}));
     if(att===s.id){q.splice(Math.ceil(q.length/2),0,{y:"scale",x:$("#attText").value.trim(),r:1,c:"ATT1",k:"주의 확인",n:"정답: 4"})}
     const o={t:hide?`PART ${si+1}`:(s.title||s.name),q};
     if(s.stim.trim())o.i=s.stim.trim();
@@ -429,7 +460,7 @@ function renderPreview(P){
   $("#summary").innerHTML=`<span>섹션 <b>${P.s.length}</b></span><span>전체 문항 <b>${tot}</b></span><span>7점 척도 <b>${scl}</b></span><span>역문항 <b>${rev}</b></span><span>예상 소요 <b>${Math.max(1,Math.round(tot*8/60))}분</b></span>`;
   const qh=(q,no)=>{
     let b="";
-    if(q.y==="scale")b=`<div class="sc">${[1,2,3,4,5,6,7].map(k=>`<span>${k}</span>`).join("")}</div><div class="ends"><span>1 전혀 그렇지 않다</span><span>7 매우 그렇다</span></div>`;
+    if(q.y==="scale")b=`<div class="sc">${[1,2,3,4,5,6,7].map(k=>`<span>${k}</span>`).join("")}</div><div class="ends"><span>1 ${esc(q.l?q.l[0]:"전혀 그렇지 않다")}</span><span>7 ${esc(q.l?q.l[1]:"매우 그렇다")}</span></div>`;
     else if(q.o)b=q.o.map(o=>`<div class="op">${esc(o)}</div>`).join("");
     else b=`<div class="ln"></div>`;
     return `<div class="c"><p class="t">${no}. ${esc(q.x)} <span class="req">*</span><span class="tag">${esc(q.c)}</span></p>${b}</div>`;
@@ -443,7 +474,7 @@ function renderCodebook(P){
   const TY={scale:"1~7점",choice:"단일선택",checkbox:"복수선택",text:"단답",paragraph:"서술"};
   cbRows=[];
   if(P.c)cbRows.push(["CONSENT","동의서","연구 참여 동의","","","",""]);
-  P.s.forEach((s,si)=>s.q.forEach(q=>cbRows.push([q.c,`${si+1}. ${s.t}`,q.x,q.k||"",q.v?"역문항":"",q.n||(q.o?q.o.join(" / "):""),TY[q.y]||q.y])));
+  P.s.forEach((s,si)=>s.q.forEach(q=>cbRows.push([q.c,`${si+1}. ${s.t}`,q.x,q.k||"",q.v?"역문항":"",q.n||(q.o?q.o.join(" / "):"")||(q.l?`1=${q.l[0]}, 7=${q.l[1]}`:""),TY[q.y]||q.y])));
   cbRows.push(["DURATION","","응답 소요 시간(초)","","","","숫자"]);
   $("#cb").innerHTML=`<thead><tr><th>변수명</th><th>구성개념</th><th>문항</th><th>역문항</th><th>비고</th></tr></thead><tbody>${cbRows.map(r=>`<tr><td class="m">${esc(r[0])}</td><td>${esc(r[3])}</td><td>${esc(r[2])}</td><td>${r[4]?'<b style="color:var(--red)">R</b>':""}</td><td>${esc(r[5])}</td></tr>`).join("")}</tbody>`;
 }

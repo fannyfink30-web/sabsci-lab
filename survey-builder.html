@@ -46,8 +46,8 @@ textarea{resize:vertical;min-height:64px}
 input:focus,select:focus,textarea:focus{outline:2px solid var(--navy);outline-offset:0}
 .g2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 @media (max-width:560px){.g2{grid-template-columns:1fr}}
-.cats{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
-@media (max-width:640px){.cats{grid-template-columns:repeat(2,1fr)}}
+.cats{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}
+@media (max-width:640px){.cats{grid-template-columns:repeat(3,1fr)}}
 .cats button{all:unset;cursor:pointer;text-align:center;padding:9px 6px;border:1px solid var(--line);border-radius:8px;font-size:13px;font-weight:700;background:var(--bg)}
 .cats button.on{background:var(--navy);border-color:var(--navy);color:var(--on)}
 .cats button:focus-visible,.btn:focus-visible,.tabs button:focus-visible{outline:2px solid var(--red);outline-offset:2px}
@@ -90,10 +90,10 @@ input:focus,select:focus,textarea:focus{outline:2px solid var(--navy);outline-of
 .pv-q{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:12px 14px;font-size:13.5px}
 .pv-q .t{font-weight:500;margin-bottom:8px}
 .pv-q .req{color:var(--red)}
-.scale{display:flex;align-items:center;gap:8px;font-size:11.5px;color:var(--muted);flex-wrap:wrap}
-.scale .dots{display:flex;gap:6px}
-.scale .d{display:flex;flex-direction:column;align-items:center;gap:2px;font-variant-numeric:tabular-nums}
-.scale .d i{width:14px;height:14px;border:1.5px solid var(--muted);border-radius:50%;display:block}
+.scale{display:flex;flex-direction:column;gap:4px}
+.scale .btns{display:grid;gap:4px}
+.scale .btns span{border:1.5px solid var(--line);border-radius:6px;text-align:center;font-weight:700;padding:4px 0;font-size:12px;font-variant-numeric:tabular-nums;background:var(--surface)}
+.scale .ends{display:flex;justify-content:space-between;font-size:11px;color:var(--muted)}
 .pv-opt{display:flex;gap:8px;align-items:center;font-size:13px;margin:3px 0}
 .pv-opt i{width:13px;height:13px;border:1.5px solid var(--muted);display:block;flex:none}
 .pv-opt i.r{border-radius:50%}
@@ -110,9 +110,10 @@ code{font-family:var(--mono);font-size:12.5px;background:var(--soft);padding:1px
 </style>
 </head>
 <body>
-<header><div class="wrap top">
+<header><div class="wrap top" style="justify-content:space-between"><div class="row" style="gap:12px;flex-wrap:nowrap">
   <div class="mark" aria-hidden="true"></div>
   <div><h1>만족도 설문 빌더</h1><p>카테고리별 표준 문항을 골라 다듬으면 바로 설문 링크가 나오고, 응답은 내 구글 스프레드시트에 모입니다</p></div>
+</div><a href="/builder" class="btn ghost sm" style="text-decoration:none;white-space:nowrap">← 설문 빌더 홈</a>
 </div></header>
 
 <div class="wrap layout">
@@ -120,7 +121,7 @@ code{font-family:var(--mono);font-size:12.5px;background:var(--soft);padding:1px
     <div class="card stack">
       <h2><span class="no">01</span>조사 대상</h2>
       <div>
-        <label>제품·서비스 카테고리</label>
+        <label>조사 카테고리</label>
         <div class="cats" id="cats"></div>
       </div>
       <div class="g2">
@@ -238,6 +239,18 @@ const CATS={
   app:{label:"앱·디지털",noun:"이 앱",verb:"이용",
     attr:[["화면 구성이 이해하기 쉽다.",1],["원하는 기능을 쉽게 찾을 수 있다.",1],["속도가 빠르고 안정적이다.",1],["오류가 거의 없다.",1],["필요한 기능을 모두 갖추고 있다.",0],["개인정보를 안심하고 맡길 수 있다.",1],["알림 빈도가 적절하다.",0],["디자인이 마음에 든다.",0]],
     channels:"앱스토어 검색, 광고, 지인 추천, SNS, 기사·블로그"},
+  edu:{label:"교육·프로그램",noun:"이 프로그램",verb:"참여",obj:"에",who:"참여자",intro:"더 나은 프로그램",behName:"참여 정보",
+    price:"투자한 시간에 비해 얻은 것이 많았다.",
+    attr:[["프로그램 내용이 나에게 유익했다.",1],["프로그램 내용이 사전에 안내된 목표와 잘 맞았다.",1],["강사(운영자)의 전문성이 높았다.",1],["강사가 이해하기 쉽게 설명했다.",1],["교육 시간과 일정이 적절했다.",1],["교육 장소(또는 온라인 환경)가 적절했다.",0],["배운 내용을 실제로 활용할 수 있을 것 같다.",1],["질문하고 참여할 기회가 충분했다.",0],["교육 자료가 도움이 되었다.",0]],
+    behavior:[["checkbox","{대상}을(를) 알게 된 경로를 모두 골라 주세요.",["학교·기관 공지","홈페이지","문자·이메일 안내","SNS","교수·지인 추천","기타"],1],["checkbox","{대상}에 참여한 이유를 모두 골라 주세요.",["취업·진로 준비","역량 개발","이수 요건·학점","관심 있는 주제","지인 권유","기타"],1],["choice","비슷한 프로그램에 참여한 경험은 몇 번인가요?",["이번이 처음","2~3회","4회 이상"],0]],
+    opinionExtra:"앞으로 열렸으면 하는 프로그램이나 주제가 있다면 적어 주세요.",
+    demo:[["choice","소속을 선택해 주세요.",["재학생","졸업생","교직원","일반인","기타"],1],["choice","학년을 선택해 주세요.",["1학년","2학년","3학년","4학년 이상","대학원생","해당 없음"],1],["choice","전공 계열을 선택해 주세요.",["인문","사회","경영·경제","자연","공학","예체능","의약","교육","기타"],0]]},
+  event:{label:"행사·세미나",noun:"이 행사",verb:"참여",obj:"에",who:"참가자",intro:"더 나은 행사",behName:"참여 정보",
+    price:"투자한 시간에 비해 얻은 것이 많았다.",
+    attr:[["행사 주제가 흥미로웠다.",1],["발표·강연 내용이 유익했다.",1],["진행 순서와 시간 운영이 적절했다.",1],["장소와 시설이 편리했다.",1],["일정·장소 등 사전 안내가 충분했다.",1],["등록·접수 절차가 편리했다.",0],["다른 참가자와 교류할 기회가 유용했다.",0],["다과·기념품 등 부대 서비스가 만족스러웠다.",0]],
+    behavior:[["checkbox","{대상}을(를) 알게 된 경로를 모두 골라 주세요.",["기관 공지·홈페이지","문자·이메일 안내","SNS","지인 추천","기타"],1],["checkbox","{대상}에 참여한 이유를 모두 골라 주세요.",["주제에 대한 관심","업무·학업에 필요","연사·기관에 대한 관심","네트워킹","지인 권유","기타"],1]],
+    opinionExtra:"다음 행사에서 다뤘으면 하는 주제가 있다면 적어 주세요.",
+    demo:[["choice","소속을 선택해 주세요.",["학생","교직원","기업","공공기관","일반인","기타"],1]]},
   stay:{label:"숙박·여행",noun:"이 숙소",verb:"이용",
     attr:[["객실이 청결하다.",1],["편의시설이 잘 갖춰져 있다.",1],["직원 응대가 친절하다.",1],["체크인·체크아웃이 편리하다.",0],["위치와 교통이 편리하다.",1],["조식 등 부대서비스가 만족스럽다.",0],["소음 없이 편안하게 쉴 수 있었다.",0],["예약 정보와 실제가 같았다.",1]],
     channels:"야놀자·여기어때 등 국내 앱, 아고다·부킹닷컴 등 해외 앱, 공식 홈페이지, 전화, 여행사"}
@@ -245,16 +258,22 @@ const CATS={
 function build(catKey){
   const c=CATS[catKey];let n=0;const id=()=>"i"+(++n)+"_"+catKey;
   const L=[];
-  [["전반적으로 {대상}에 만족한다.",1],["{대상}은(는) 기대했던 것보다 좋았다.",1],["{대상}은(는) 가격에 비해 가치가 있다.",1],[`다음에도 {대상}을(를) 다시 ${c.verb}할 의향이 있다.`,1],["주변 사람에게 {대상}을(를) 추천할 의향이 있다.",1]]
+  const obj=c.obj||"을(를)";
+  [["전반적으로 {대상}에 만족한다.",1],["{대상}은(는) 기대했던 것보다 좋았다.",1],[c.price||"{대상}은(는) 가격에 비해 가치가 있다.",1],[`다음에도 {대상}${obj} 다시 ${c.verb}할 의향이 있다.`,1],["주변 사람에게 {대상}을(를) 추천할 의향이 있다.",1]]
     .forEach(([t,on])=>L.push({id:id(),sec:"overall",type:"scale",text:t,on:!!on}));
   c.attr.forEach(([t,on])=>L.push({id:id(),sec:"attr",type:"scale",text:t,on:!!on}));
+  if(c.behavior){c.behavior.forEach(([type,text,options,on])=>L.push({id:id(),sec:"behavior",type,text,options:options.slice(),on:!!on}))}
+  else{
   L.push({id:id(),sec:"behavior",type:"choice",text:`{대상}을(를) 주로 어디에서 ${c.verb}하셨나요?`,options:c.channels.split(/\s*,\s*/).concat("기타"),on:true});
   L.push({id:id(),sec:"behavior",type:"choice",text:`{대상}을(를) 얼마나 자주 ${c.verb}하시나요?`,options:["이번이 처음","3개월에 1회 이하","1~2개월에 1회","월 2~3회","주 1회 이상"],on:true});
   L.push({id:id(),sec:"behavior",type:"checkbox",text:"{대상}을(를) 처음 알게 된 경로를 모두 골라 주세요.",options:["인스타그램·유튜브 등 SNS","지인 추천","매장에서 직접","온라인 검색","광고","기타"],on:true});
   L.push({id:id(),sec:"behavior",type:"choice",text:`${c.verb} 시 가장 중요하게 생각하는 요소는 무엇인가요?`,options:["품질","가격","브랜드","후기·평점","디자인","편리함","기타"],on:false});
+  }
   L.push({id:id(),sec:"opinion",type:"paragraph",text:"{대상}에서 가장 만족스러운 점은 무엇인가요?",on:true});
   L.push({id:id(),sec:"opinion",type:"paragraph",text:"{대상}에서 개선되었으면 하는 점은 무엇인가요?",on:true});
+  if(c.opinionExtra)L.push({id:id(),sec:"opinion",type:"paragraph",text:c.opinionExtra,on:true});
   L.push({id:id(),sec:"opinion",type:"paragraph",text:"그 밖에 하고 싶은 말씀이 있다면 자유롭게 적어 주세요.",on:false});
+  if(c.demo)c.demo.forEach(([type,text,options,on])=>L.push({id:id(),sec:"demo",type,text,options:options.slice(),on:!!on}));
   L.push({id:id(),sec:"demo",type:"choice",text:"성별을 선택해 주세요.",options:["남성","여성","응답하지 않음"],on:true});
   L.push({id:id(),sec:"demo",type:"choice",text:"연령대를 선택해 주세요.",options:["10대","20대","30대","40대","50대","60대 이상"],on:true});
   L.push({id:id(),sec:"demo",type:"choice",text:"직업을 선택해 주세요.",options:["학생","직장인","자영업","전문직","주부","무직","기타"],on:false});
@@ -262,8 +281,9 @@ function build(catKey){
   return L;
 }
 
+function secName(s){return s.key==="behavior"&&CATS[cat].behName?CATS[cat].behName:s.name}
 /* ---------- state ---------- */
-let cat="cosmetics",items=build(cat),cust=0;
+let cat="edu",items=build(cat),cust=0;
 const store={};
 function noun(){return $("#target").value.trim()||CATS[cat].noun}
 function fill(t){
@@ -282,22 +302,24 @@ function unfill(v){
 }
 function defaults(){
   const o=$("#org").value.trim();
-  if(!$("#title").dataset.touched)$("#title").value=`${$("#target").value.trim()||CATS[cat].label} 고객 만족도 조사`;
-  if(!$("#desc").dataset.touched)$("#desc").value=`안녕하십니까.\n${o?o+"에서 ":""}고객 여러분께 더 나은 ${CATS[cat].label==="외식·카페"?"서비스":"제품과 서비스"}를 제공하기 위해 만족도 조사를 실시하고 있습니다.\n응답 내용은 통계 목적으로만 사용되며, 개인을 식별할 수 있는 정보는 수집하지 않습니다.\n약 3~5분 정도 소요됩니다. 소중한 의견 감사합니다.`;
+  if(!$("#title").dataset.touched)$("#title").value=`${$("#target").value.trim()||CATS[cat].label} ${CATS[cat].who||"고객"} 만족도 조사`;
+  if(!$("#desc").dataset.touched)$("#desc").value=`안녕하십니까.\n${o?o+"에서 ":""}${CATS[cat].who||"고객"} 여러분께 ${CATS[cat].intro||(CATS[cat].label==="외식·카페"?"더 나은 서비스":"더 나은 제품과 서비스")}를 제공하기 위해 만족도 조사를 실시하고 있습니다.\n응답 내용은 통계 목적으로만 사용되며, 개인을 식별할 수 있는 정보는 수집하지 않습니다.\n약 3~5분 정도 소요됩니다. 소중한 의견 감사합니다.`;
 }
 
 /* ---------- render editor ---------- */
+const EXAMPLES={"cosmetics": ["시카 진정 토너", "OO코스메틱"], "food": ["저당 그릭요거트", "OO푸드"], "restaurant": ["OO카페 판교점", "OO카페"], "household": ["천연 세탁세제", "OO리빙"], "electronics": ["무선 청소기 X5", "OO전자"], "fashion": ["오버핏 니트 가디건", "OO스튜디오"], "ecommerce": ["OO마켓", "OO마켓"], "service": ["1:1 PT 프로그램", "OO피트니스"], "app": ["OO가계부 앱", "OO랩스"], "edu": ["2026 취업역량 캠프", "OO대학교 대학일자리플러스센터"], "event": ["2026 창업 네트워킹 데이", "OO창업지원센터"], "stay": ["OO호텔 제주", "OO호텔"]};
+function setExamples(){const e=EXAMPLES[cat]||EXAMPLES.cosmetics;$("#target").placeholder="예: "+e[0];$("#org").placeholder="예: "+e[1];$("label[for=target] .hint").textContent=`비우면 "${CATS[cat].noun}"처럼 씁니다`}
 function renderCats(){
-  $("#cats").innerHTML=Object.entries(CATS).map(([k,c])=>`<button type="button" data-cat="${k}" class="${k===cat?"on":""}" aria-pressed="${k===cat}">${c.label}</button>`).join("");
+  $("#cats").innerHTML=Object.entries(CATS).sort((x,y)=>(y[0]==="edu")-(x[0]==="edu")).map(([k,c])=>`<button type="button" data-cat="${k}" class="${k===cat?"on":""}" aria-pressed="${k===cat}">${c.label}</button>`).join("");
   $$("#cats button").forEach(b=>b.onclick=()=>{
-    store[cat]=items;cat=b.dataset.cat;items=store[cat]||build(cat);renderCats();defaults();render();
+    store[cat]=items;cat=b.dataset.cat;items=store[cat]||build(cat);renderCats();setExamples();defaults();render();
   });
 }
 function render(){
   $("#secs").innerHTML=SECS.map(s=>{
     const list=items.filter(i=>i.sec===s.key);
     const on=list.filter(i=>i.on).length;
-    return `<div class="sec"><div class="sec-h"><b>${s.name}</b><span class="cnt">${on} / ${list.length}개 선택</span></div>
+    return `<div class="sec"><div class="sec-h"><b>${secName(s)}</b><span class="cnt">${on} / ${list.length}개 선택</span></div>
       ${list.map((i,idx)=>`<div class="item ${i.on?"":"off"}" data-id="${i.id}">
         <input type="checkbox" ${i.on?"checked":""} aria-label="문항 포함" data-k="on">
         <div class="body">
@@ -351,7 +373,7 @@ function config(){
   const sections=SECS.map(s=>{
     let list=items.filter(i=>i.sec===s.key&&i.on&&i.text.trim()).map(i=>({type:i.type,text:fill(i.text).trim(),options:i.options?i.options.slice():undefined,required:req}));
     if(s.key==="overall"&&$("#nps").checked)list.push({type:"nps",text:fill(T+"을(를) 친구나 동료에게 추천할 가능성은 얼마나 되나요?"),required:req});
-    return {title:s.name,items:list};
+    return {title:secName(s),items:list};
   }).filter(s=>s.items.length);
   return {title:$("#title").value.trim()||"고객 만족도 조사",description:$("#desc").value.trim(),sections};
 }
@@ -368,8 +390,8 @@ function update(){
 function pvBody(q){
   if(q.type==="scale"||q.type==="nps"){
     const [a,b,l,r]=q.type==="scale"?[1,7,"전혀 그렇지 않다","매우 그렇다"]:[0,10,"전혀 추천하지 않는다","매우 추천한다"];
-    let d="";for(let k=a;k<=b;k++)d+=`<span class="d">${k}<i></i></span>`;
-    return `<div class="scale"><span>${l}</span><span class="dots">${d}</span><span>${r}</span></div>`;
+    let d="";for(let k=a;k<=b;k++)d+=`<span>${k}</span>`;
+    return `<div class="scale"><div class="btns" style="grid-template-columns:repeat(${b-a+1>7?6:7},1fr)">${d}</div><div class="ends"><span>${a} ${l}</span><span>${b} ${r}</span></div></div>`;
   }
   if(q.type==="choice"||q.type==="checkbox")return (q.options||[]).map(o=>`<div class="pv-opt"><i class="${q.type==="choice"?"r":""}"></i>${esc(o)}</div>`).join("");
   return `<div class="pv-line" style="${q.type==="paragraph"?"width:100%":""}"></div>`;
@@ -449,7 +471,7 @@ $("#copy").onclick=async()=>{
     $("#copyStatus").textContent="자동 복사가 막혀 코드를 선택해 두었습니다. Ctrl+C(⌘+C)로 복사하세요.";
   }
 };
-renderCats();defaults();render();
+renderCats();setExamples();defaults();render();
 /* ---------- 짧은 링크 (홈페이지 빌더 전용) ---------- */
 let LAST=null;
 function shortReset(){const o=document.getElementById("shortOut");if(o)o.hidden=true;const st=document.getElementById("shortStatus");if(st){st.textContent="";st.className="status"}}
