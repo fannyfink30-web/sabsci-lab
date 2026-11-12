@@ -78,7 +78,7 @@ footer{text-align:center;font-size:12px;color:var(--muted);margin-top:8px}
 <script>
 (function(){
 /* 처음 한 번 설정: 링크에 응답 수집 주소가 없을 때 쓸 기본 주소 (비워 두어도 됩니다) */
-const DEFAULT_ENDPOINT = "";
+const DEFAULT_ENDPOINT = "https://script.google.com/macros/s/AKfycbwHLcYk15dyBXeeLEnEEpRsL7YkopAPLkYKfLNn-JXHk2vuBJ8MTlpL544NSbZxnwc1FA/exec";
 
 const app=document.getElementById("app");
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -102,7 +102,17 @@ const store={get(k){try{return localStorage.getItem(k)}catch(e){return null}},se
 async function init(){
   const h=decodeURIComponent(location.hash.slice(1));
   if(!h){hub();return}
-  try{S=await decode(h)}catch(e){fail("설문 링크가 잘렸거나 손상되었습니다. 받으신 링크를 처음부터 끝까지 다시 복사해 열어 주세요.");return}
+  if(h.length<64){
+    // 짧은 링크: 설문 내용을 응답 시트에서 불러옵니다
+    try{
+      const r=await fetch(DEFAULT_ENDPOINT+"?id="+encodeURIComponent(h.toLowerCase()));
+      const j=await r.json();
+      if(!j.ok){fail("등록되지 않은 설문 주소입니다. 받으신 링크의 철자를 확인해 주세요.");return}
+      S=j.survey;
+    }catch(e){fail("설문을 불러오지 못했습니다. 인터넷 연결을 확인한 뒤 새로고침해 주세요.");return}
+  }else{
+    try{S=await decode(h)}catch(e){fail("설문 링크가 잘렸거나 손상되었습니다. 받으신 링크를 처음부터 끝까지 다시 복사해 열어 주세요.");return}
+  }
   if(!S||!Array.isArray(S.s)){fail("설문 내용을 읽지 못했습니다.");return}
   S.e=S.e||DEFAULT_ENDPOINT;
   document.title=(S.t||"설문 조사")+(S.o?" | "+S.o:"");
