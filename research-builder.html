@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<title>연구 설문 빌더</title>
+<title>연구 설문 만들기 | 서베이 툴</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
@@ -90,13 +90,13 @@ input[type=checkbox]{width:16px;height:16px;padding:0;accent-color:var(--navy)}
 /* preview mirrors survey page */
 .pv{display:flex;flex-direction:column;gap:10px;background:#f2f5fa;padding:12px;border-radius:10px;color:#17213a}
 .pv .c{background:#fff;border:1px solid #d9e0ec;border-radius:10px;padding:14px;font-size:13.5px}
-.pv .cover{border-top:8px solid #0e2a6b}
-.pv .org{font-size:12px;font-weight:700;color:#0e2a6b;margin:0 0 4px}
+.pv .cover{border-top:8px solid var(--pvc,#0e2a6b)}
+.pv .org{font-size:12px;font-weight:700;color:var(--pvc,#0e2a6b);margin:0 0 4px}
 .pv h3{margin:0 0 6px;font-size:18px;line-height:1.35}
 .pv .d{white-space:pre-wrap;color:#5b6580;margin:0}
-.pv .sb{background:#0e2a6b;color:#fff;border-radius:10px 10px 0 0;padding:9px 14px;font-weight:700;font-size:13.5px}
+.pv .sb{background:var(--pvc,#0e2a6b);color:var(--pvon,#fff);border-radius:10px 10px 0 0;padding:9px 14px;font-weight:700;font-size:13.5px}
 .pv .sd{background:#fff;border:1px solid #d9e0ec;border-top:0;border-radius:0 0 10px 10px;padding:8px 14px;color:#5b6580;font-size:12.5px;margin-top:-10px}
-.pv .stim{background:#dae3f3;border-left:5px solid #0e2a6b;border-radius:8px;padding:10px 12px;white-space:pre-wrap}
+.pv .stim{background:var(--pvs,#dae3f3);border-left:5px solid var(--pvc,#0e2a6b);border-radius:8px;padding:10px 12px;white-space:pre-wrap}
 .pv .t{color:#17414f;font-weight:500;margin:0 0 8px}
 .pv .req{color:#c00000}
 .pv .sc{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
@@ -118,14 +118,24 @@ code{font-family:var(--mono);font-size:12.5px;background:var(--soft);padding:1px
 .status{font-size:12.5px;color:var(--muted);min-height:1.3em}
 .status.err{color:var(--red)}
 .note{font-size:12.5px;color:var(--muted);background:var(--soft);border-radius:8px;padding:9px 12px}
+.design-box{display:flex;flex-direction:column;gap:10px;border:1px solid var(--line);border-radius:10px;padding:12px 14px;background:var(--bg)}
+.design-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.dlabel{font-size:12.5px;font-weight:700;min-width:44px}
+.sw{display:flex;gap:6px;flex-wrap:wrap}
+.sw button{width:26px;height:26px;border-radius:50%;border:2px solid var(--surface);box-shadow:0 0 0 1px var(--line);cursor:pointer;padding:0}
+.sw button[aria-pressed="true"]{box-shadow:0 0 0 2px var(--ink)}
+.sw button:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.dcustom{display:flex;align-items:center;gap:6px;font-size:12.5px;font-weight:500;margin:0;cursor:pointer}
+.dcustom input{width:30px;height:26px;padding:0;border:1px solid var(--line);border-radius:6px;background:none}
+#logoPv{height:28px;max-width:160px;object-fit:contain;background:#fff;border:1px solid var(--line);border-radius:6px;padding:3px 6px}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
 <body>
 <header><div class="wrap top" style="justify-content:space-between"><div class="row" style="gap:12px;flex-wrap:nowrap">
   <div class="mark" aria-hidden="true"></div>
-  <div><h1>연구 설문 빌더</h1><p>척도를 골라 구성하면 동의서·변수명·코드북이 갖춰진 연구용 설문 링크가 나오고, 응답은 내 구글 시트에 쌓입니다</p></div>
-</div><a href="/builder" class="btn ghost sm" style="text-decoration:none;white-space:nowrap">← 설문 빌더 홈</a>
+  <div><h1>연구 설문 만들기</h1><p>척도를 골라 구성하면 동의서·변수명·코드북이 갖춰진 연구용 설문 링크가 나오고, 응답은 내 구글 시트에 쌓입니다</p></div>
+</div><a href="/builder" class="btn ghost sm" style="text-decoration:none;white-space:nowrap">← 서베이 툴</a>
 </div></header>
 
 <div class="wrap layout">
@@ -148,6 +158,11 @@ code{font-family:var(--mono);font-size:12.5px;background:var(--soft);padding:1px
     <div><label for="f_target">조사 대상 표현 <span class="hint">문항의 {대상} 자리에 들어갑니다. 예: 이 서비스, 이 브랜드</span></label><input id="f_target"></div>
     <div><label for="f_desc">첫 화면 안내문</label><textarea id="f_desc" rows="4"></textarea></div>
     <div><label for="f_consent">연구 참여 동의서 <span class="hint">위 정보로 자동 작성되며, 직접 고치면 그대로 유지됩니다</span></label><textarea id="f_consent" rows="9"></textarea></div>
+      <div class="design-box">
+        <div class="design-row"><span class="dlabel">대표 색</span><div class="sw" id="swatches"></div><label class="dcustom" title="직접 고르기"><input type="color" id="thPick" aria-label="대표 색 직접 고르기"> 직접</label></div>
+        <div class="design-row"><span class="dlabel">로고</span><img id="logoPv" alt="현재 로고"><input type="file" id="logoFile" accept="image/png,image/jpeg,image/webp" hidden><button type="button" class="btn ghost sm" id="logoBtn">로고 올리기</button><button type="button" class="btn ghost sm" id="logoReset">기본 로고로</button></div>
+        <p class="hint" id="logoNote" style="margin:0">로고를 올리지 않으면 연구소 로고가 들어갑니다. 올린 로고는 <b>짧은 링크</b>로 만든 설문에 표시됩니다.</p>
+      </div>
     <label class="toggle" for="f_useConsent"><input type="checkbox" id="f_useConsent" checked> 응답 전에 동의서를 보여주고 동의한 사람만 진행</label>
   </div>
 
@@ -221,7 +236,7 @@ code{font-family:var(--mono);font-size:12.5px;background:var(--soft);padding:1px
       <details class="card" id="setup">
         <summary style="cursor:pointer;font-weight:700;color:var(--navy)">처음 한 번만: 응답 시트 연결하기</summary>
         <ol class="guide" style="margin-top:10px">
-          <li>응답을 모을 <a href="https://sheets.new" target="_blank" rel="noopener">구글 스프레드시트를 새로 만듭니다</a>. 소비자용 빌더와 같은 시트를 써도 됩니다.</li>
+          <li>응답을 모을 <a href="https://sheets.new" target="_blank" rel="noopener">구글 스프레드시트를 새로 만듭니다</a>. 만족도 설문과 같은 시트를 써도 됩니다.</li>
           <li>시트 메뉴 <b>확장 프로그램 → Apps Script</b>에 아래 코드를 붙여 넣고 저장합니다.</li>
           <li><b>배포 → 새 배포 → 웹 앱</b>, <b>실행: 나</b>, <b>액세스: 모든 사용자</b>로 배포하고 권한을 허용합니다.</li>
           <li>나온 <span class="out">웹 앱 URL</span>을 위 ‘응답 수집 주소’에 붙여 넣습니다.</li>
@@ -465,7 +480,7 @@ function renderPreview(P){
     else b=`<div class="ln"></div>`;
     return `<div class="c"><p class="t">${no}. ${esc(q.x)} <span class="req">*</span><span class="tag">${esc(q.c)}</span></p>${b}</div>`;
   };
-  $("#pv").innerHTML=`<div class="c cover">${P.o?`<p class="org">${esc(P.o)}</p>`:""}<h3>${esc(P.t)}</h3><p class="d">${esc(P.d)}</p>${P.irb?`<p class="d" style="font-size:11.5px;margin-top:6px">IRB 승인번호 ${esc(P.irb)}</p>`:""}</div>`+
+  $("#pv").innerHTML=`<div class="c cover"><img src="${LOGO||DEFAULT_LOGO}" alt="" style="height:28px;max-width:170px;object-fit:contain;display:block;margin-bottom:8px">${P.o?`<p class="org">${esc(P.o)}</p>`:""}<h3>${esc(P.t)}</h3><p class="d">${esc(P.d)}</p>${P.irb?`<p class="d" style="font-size:11.5px;margin-top:6px">IRB 승인번호 ${esc(P.irb)}</p>`:""}</div>`+
     (P.c?`<div class="sb">연구 참여 동의서</div><div class="c" style="border-radius:0 0 10px 10px;margin-top:-10px"><p class="d" style="color:#17213a">${esc(P.c)}</p></div><div class="c"><p class="t">위 내용을 읽고 이해하였으며, 연구에 참여하는 데 동의하십니까? <span class="req">*</span></p><div class="op">네, 동의합니다.</div><div class="op">아니요, 동의하지 않습니다.</div></div>`:"")+
     P.s.map((s,si)=>`<div class="sb">${si+1}. ${esc(s.t)}${s.rn?' <span style="font-weight:400;font-size:11.5px;opacity:.8">· 순서 무작위</span>':""}</div><div class="sd">이어서 아래 ${s.q.length}개의 질문에 응답하여 주세요.</div>${s.i?`<div class="stim">${esc(s.i)}</div>`:""}${s.q.map((q,i)=>qh(q,i+1)).join("")}`).join("");
 }
@@ -506,6 +521,7 @@ async function makeLink(P){
   if(!ep)$("#setup").open=true;
   const now=new Date(),ymd=String(now.getFullYear()).slice(2)+String(now.getMonth()+1).padStart(2,"0")+String(now.getDate()).padStart(2,"0");
   const body={...P,id:"R"+ymd+"-"+hash6(JSON.stringify(P))};
+  if(THEME&&THEME!=="#0E2A6B")body.th=THEME;
   if(ep)body.e=ep;
   const h=await encode(body);if(my!==seq)return;
   if(!LAST||LAST.id!==body.id)shortReset();LAST=body;
@@ -521,7 +537,7 @@ async function makeLink(P){
 }
 
 /* ---------- wiring ---------- */
-function update(){const P=survey();renderPreview(P);renderCodebook(P);makeLink(P);renderAttSel()}
+function update(){const P=survey();renderPreview(P);applyPv();renderCodebook(P);makeLink(P);renderAttSel()}
 function renderAll(){renderLib();renderSecs();renderDemo();renderAttSel();update()}
 FIELDS.forEach(k=>$("#"+k).addEventListener("input",()=>{autoTexts();if(k==="f_target")renderAll();else update()}));
 ["f_desc","f_consent"].forEach(k=>$("#"+k).addEventListener("input",()=>{$("#"+k).dataset.touched=1;update()}));
@@ -544,6 +560,40 @@ $("#base").addEventListener("input",()=>{mem.set("rsb_base",$("#base").value.tri
 $("#copyLink").onclick=async()=>{try{await navigator.clipboard.writeText($("#link").value);$("#linkStatus").textContent="링크를 복사했습니다."}catch(e){$("#link").select();$("#linkStatus").textContent="자동 복사가 막혀 링크를 선택해 두었습니다. Ctrl+C(⌘+C)로 복사하세요."}};
 $("#copy").onclick=async()=>{try{await navigator.clipboard.writeText(GAS);$("#copyStatus").textContent="복사했습니다."}catch(e){const r=document.createRange();r.selectNodeContents($("#code"));const s=getSelection();s.removeAllRanges();s.addRange(r);$("#copyStatus").textContent="코드를 선택해 두었습니다. Ctrl+C(⌘+C)로 복사하세요."}};
 
+
+/* ---------- 디자인: 대표 색·로고 ---------- */
+var DEFAULT_LOGO="data:image/png;base64,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";
+var SWATCH=[["#0E2A6B","남색(기본)"],["#004898","블루"],["#00796B","청록"],["#2E7D32","그린"],["#C2185B","로즈"],["#E65100","오렌지"],["#5E35B1","퍼플"],["#37474F","차콜"]];
+var THEME=(mem.get("rsb_th")||"#0E2A6B").toUpperCase(), LOGO=mem.get("rsb_lg")||"";
+function dMix(h,t){const n=parseInt(h.slice(1),16),c=[n>>16&255,n>>8&255,n&255].map(v=>Math.round(v+(255-v)*t));return "#"+c.map(v=>v.toString(16).padStart(2,"0")).join("")}
+function dLum(h){const n=parseInt(h.slice(1),16);const c=[n>>16&255,n>>8&255,n&255].map(v=>{v/=255;return v<=.03928?v/12.92:Math.pow((v+.055)/1.055,2.4)});return .2126*c[0]+.7152*c[1]+.0722*c[2]}
+function themeOn(){return dLum(THEME)>.45?"#17213a":"#fff"}
+function applyPv(){
+  const pv=$("#pv");if(!pv)return;
+  pv.style.setProperty("--navy",THEME);pv.style.setProperty("--on",themeOn());pv.style.setProperty("--soft",dMix(THEME,.86));
+  pv.style.setProperty("--pvc",THEME);pv.style.setProperty("--pvon",themeOn());pv.style.setProperty("--pvs",dMix(THEME,.86));
+}
+function renderDesign(){
+  $("#swatches").innerHTML=SWATCH.map(([c,n])=>`<button type="button" style="background:${c}" data-c="${c}" title="${n}" aria-label="${n}" aria-pressed="${c===THEME}"></button>`).join("");
+  $$("#swatches button").forEach(b=>b.onclick=()=>setTheme(b.dataset.c));
+  $("#thPick").value=THEME.toLowerCase();
+  $("#logoPv").src=LOGO||DEFAULT_LOGO;
+  $("#logoReset").hidden=!LOGO;
+}
+function setTheme(c){THEME=c.toUpperCase();mem.set("rsb_th",THEME);renderDesign();update()}
+$("#thPick").addEventListener("input",e=>setTheme(e.target.value));
+$("#logoBtn").onclick=()=>$("#logoFile").click();
+$("#logoReset").onclick=()=>{LOGO="";mem.set("rsb_lg","");renderDesign();update()};
+function shrinkLogo(file){return new Promise((res,rej)=>{const img=new Image();img.onload=()=>{let h=96,w=Math.round(img.width*h/img.height);if(w>400){w=400;h=Math.round(img.height*w/img.width)}
+  const c=document.createElement("canvas");c.width=w;c.height=h;const x=c.getContext("2d");x.drawImage(img,0,0,w,h);
+  let d=c.toDataURL("image/webp",.85);if(!d.startsWith("data:image/webp")||d.length>16000)d=c.toDataURL("image/png");
+  if(d.length>16000){x.globalCompositeOperation="destination-over";x.fillStyle="#fff";x.fillRect(0,0,w,h);d=c.toDataURL("image/jpeg",.82)}
+  URL.revokeObjectURL(img.src);res(d)};img.onerror=()=>rej(new Error("이미지를 읽지 못했습니다."));img.src=URL.createObjectURL(file)})}
+$("#logoFile").onchange=async e=>{const f=e.target.files[0];if(!f)return;
+  try{LOGO=await shrinkLogo(f);mem.set("rsb_lg",LOGO);$("#logoNote").innerHTML="로고를 바꿨습니다. 올린 로고는 <b>짧은 링크</b>로 만든 설문에 표시됩니다."}
+  catch(err){$("#logoNote").textContent="로고를 읽지 못했습니다. PNG·JPG 파일로 다시 올려 주세요."}
+  e.target.value="";renderDesign();update()};
+renderDesign();
 example();autoTexts();renderAll();
 /* ---------- 짧은 링크 (홈페이지 빌더 전용) ---------- */
 let LAST=null;
@@ -555,7 +605,7 @@ document.getElementById("mkShort").onclick=async()=>{
   let slug=(document.getElementById("slug").value.trim()||LAST.id).toLowerCase();
   if(!/^[a-z0-9][a-z0-9-]{2,39}$/.test(slug)){st.textContent="영문 소문자·숫자·하이픈으로 3~40자를 써 주세요. 첫 글자는 하이픈이 될 수 없습니다.";st.className="status err";return}
   btn.disabled=true;st.className="status";st.textContent="등록하는 중…";
-  const body=LAST;
+  const body=LOGO?{...LAST,lg:LOGO}:LAST;
   try{
     await fetch(ep,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({action:"register",slug,survey:body})});
     const j=await (await fetch(ep+"?id="+encodeURIComponent(slug))).json();

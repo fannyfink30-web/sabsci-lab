@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<title>만족도 설문 빌더</title>
+<title>만족도 설문 만들기 | 서베이 툴</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
@@ -54,6 +54,8 @@ input:focus,select:focus,textarea:focus{outline:2px solid var(--navy);outline-of
 .sec{border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--surface)}
 .sec-h{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:10px 14px;background:var(--soft)}
 .sec-h b{color:var(--navy)}
+.sec-name{border:1px solid transparent;background:transparent;font-weight:700;color:var(--navy);padding:3px 6px;min-width:0;flex:1}
+.sec-name:hover{border-color:var(--line);background:var(--surface)}
 .sec-h .cnt{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
 .item{display:grid;grid-template-columns:22px 1fr auto;gap:10px;padding:10px 14px;border-top:1px solid var(--line);align-items:start}
 .item.off{opacity:.55}
@@ -106,14 +108,24 @@ code{font-family:var(--mono);font-size:12.5px;background:var(--soft);padding:1px
 .status{font-size:12.5px;color:var(--muted);min-height:1.3em}
 .toggle{display:flex;gap:8px;align-items:center;font-size:13px;font-weight:500}
 .toggle input{width:16px;height:16px;accent-color:var(--navy)}
+.design-box{display:flex;flex-direction:column;gap:10px;border:1px solid var(--line);border-radius:10px;padding:12px 14px;background:var(--bg)}
+.design-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.dlabel{font-size:12.5px;font-weight:700;min-width:44px}
+.sw{display:flex;gap:6px;flex-wrap:wrap}
+.sw button{width:26px;height:26px;border-radius:50%;border:2px solid var(--surface);box-shadow:0 0 0 1px var(--line);cursor:pointer;padding:0}
+.sw button[aria-pressed="true"]{box-shadow:0 0 0 2px var(--ink)}
+.sw button:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.dcustom{display:flex;align-items:center;gap:6px;font-size:12.5px;font-weight:500;margin:0;cursor:pointer}
+.dcustom input{width:30px;height:26px;padding:0;border:1px solid var(--line);border-radius:6px;background:none}
+#logoPv{height:28px;max-width:160px;object-fit:contain;background:#fff;border:1px solid var(--line);border-radius:6px;padding:3px 6px}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
 <body>
 <header><div class="wrap top" style="justify-content:space-between"><div class="row" style="gap:12px;flex-wrap:nowrap">
   <div class="mark" aria-hidden="true"></div>
-  <div><h1>만족도 설문 빌더</h1><p>카테고리별 표준 문항을 골라 다듬으면 바로 설문 링크가 나오고, 응답은 내 구글 스프레드시트에 모입니다</p></div>
-</div><a href="/builder" class="btn ghost sm" style="text-decoration:none;white-space:nowrap">← 설문 빌더 홈</a>
+  <div><h1>만족도 설문 만들기</h1><p>카테고리별 표준 문항을 골라 다듬으면 바로 설문 링크가 나오고, 응답은 내 구글 스프레드시트에 모입니다</p></div>
+</div><a href="/builder" class="btn ghost sm" style="text-decoration:none;white-space:nowrap">← 서베이 툴</a>
 </div></header>
 
 <div class="wrap layout">
@@ -130,6 +142,11 @@ code{font-family:var(--mono);font-size:12.5px;background:var(--soft);padding:1px
       </div>
       <div><label for="title">설문 제목</label><input id="title"></div>
       <div><label for="desc">안내문</label><textarea id="desc" rows="4"></textarea></div>
+      <div class="design-box">
+        <div class="design-row"><span class="dlabel">대표 색</span><div class="sw" id="swatches"></div><label class="dcustom" title="직접 고르기"><input type="color" id="thPick" aria-label="대표 색 직접 고르기"> 직접</label></div>
+        <div class="design-row"><span class="dlabel">로고</span><img id="logoPv" alt="현재 로고"><input type="file" id="logoFile" accept="image/png,image/jpeg,image/webp" hidden><button type="button" class="btn ghost sm" id="logoBtn">로고 올리기</button><button type="button" class="btn ghost sm" id="logoReset">기본 로고로</button></div>
+        <p class="hint" id="logoNote" style="margin:0">로고를 올리지 않으면 연구소 로고가 들어갑니다. 올린 로고는 <b>짧은 링크</b>로 만든 설문에 표시됩니다.</p>
+      </div>
       <div class="row" style="gap:18px">
         <label class="toggle" for="reqAll"><input type="checkbox" id="reqAll" checked> 모든 문항 필수 응답</label>
         <label class="toggle" for="nps"><input type="checkbox" id="nps"> 추천지수(NPS, 0~10점) 문항 추가</label>
@@ -203,7 +220,7 @@ const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&
 const T="{대상}";
 
 /* ---------- library ---------- */
-const SECS=[
+let SECS=[
   {key:"overall",name:"전반적 만족도"},
   {key:"attr",name:"세부 속성 평가"},
   {key:"behavior",name:"구매·이용 행동"},
@@ -281,7 +298,8 @@ function build(catKey){
   return L;
 }
 
-function secName(s){return s.key==="behavior"&&CATS[cat].behName?CATS[cat].behName:s.name}
+function secName(s){return s.label||(s.key==="behavior"&&CATS[cat].behName?CATS[cat].behName:s.name)}
+let csn=0;
 /* ---------- state ---------- */
 let cat="edu",items=build(cat),cust=0;
 const store={};
@@ -316,10 +334,11 @@ function renderCats(){
   });
 }
 function render(){
-  $("#secs").innerHTML=SECS.map(s=>{
+  $("#secs").innerHTML=`<div class="card row" style="gap:8px;padding:12px 14px;border-style:dashed;border-color:var(--navy)"><b style="color:var(--navy);font-size:14px;white-space:nowrap">섹션 추가</b><input id="newSec" placeholder="예: 운영 환경, 강사 평가, 사전·사후 비교" aria-label="새 섹션 이름" style="flex:1;min-width:160px"><button class="btn sm" id="addSec">섹션 추가</button></div>`+SECS.map(s=>{
     const list=items.filter(i=>i.sec===s.key);
     const on=list.filter(i=>i.on).length;
-    return `<div class="sec"><div class="sec-h"><b>${secName(s)}</b><span class="cnt">${on} / ${list.length}개 선택</span></div>
+    const si=SECS.indexOf(s);
+    return `<div class="sec" data-sec="${s.key}"><div class="sec-h"><input class="sec-name" value="${esc(secName(s))}" aria-label="섹션 이름" data-sk="name"><span class="row" style="gap:6px;flex-wrap:nowrap"><span class="cnt">${on} / ${list.length}개 선택</span><button class="icon" data-smv="-1" aria-label="섹션 위로" ${si===0?"disabled":""}>↑</button><button class="icon" data-smv="1" aria-label="섹션 아래로" ${si===SECS.length-1?"disabled":""}>↓</button>${s.custom?`<button class="icon" data-sdel aria-label="섹션 삭제">✕</button>`:""}</span></div>
       ${list.map((i,idx)=>`<div class="item ${i.on?"":"off"}" data-id="${i.id}">
         <input type="checkbox" ${i.on?"checked":""} aria-label="문항 포함" data-k="on">
         <div class="body">
@@ -339,6 +358,17 @@ function render(){
         <button class="btn ghost sm" data-add>추가</button>
       </div></div>`;
   }).join("");
+  $$("#secs .sec").forEach(box=>{
+    const s=SECS.find(x=>x.key===box.dataset.sec);if(!s)return;
+    box.querySelector('[data-sk="name"]').oninput=e=>{s.label=e.target.value;update()};
+    box.querySelectorAll("[data-smv]").forEach(b=>b.onclick=()=>{const i=SECS.indexOf(s),j=i+ +b.dataset.smv;if(j<0||j>=SECS.length)return;[SECS[i],SECS[j]]=[SECS[j],SECS[i]];render()});
+    const d=box.querySelector("[data-sdel]");if(d)d.onclick=()=>{SECS=SECS.filter(x=>x!==s);items=items.filter(x=>x.sec!==s.key);render()};
+  });
+  const addSec=()=>{const n=$("#newSec").value.trim();if(!n){$("#newSec").focus();return}
+    const s={key:"cs"+(++csn),name:n,custom:true};const di=SECS.findIndex(x=>x.key==="demo");
+    if(di<0)SECS.push(s);else SECS.splice(di,0,s);render();
+    const el=document.querySelector(`.sec[data-sec="${s.key}"] .add input`);if(el)el.focus()};
+  $("#addSec").onclick=addSec;$("#newSec").onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();addSec()}};
   $$("#secs .item").forEach(row=>{
     const it=items.find(x=>x.id===row.dataset.id);
     row.querySelector('[data-k="on"]').onchange=e=>{it.on=e.target.checked;render()};
@@ -382,9 +412,10 @@ function update(){
   const total=C.sections.reduce((a,s)=>a+s.items.length,0);
   const scale=C.sections.reduce((a,s)=>a+s.items.filter(i=>i.type==="scale").length,0);
   $("#summary").innerHTML=`<span>섹션 <b>${C.sections.length}</b></span><span>전체 문항 <b>${total}</b></span><span>7점 척도 <b>${scale}</b></span><span>예상 소요 <b>${Math.max(1,Math.round(total*10/60))}분</b></span>`;
-  $("#pv").innerHTML=`<div class="pv-title"><h3>${esc(C.title)}</h3><p>${esc(C.description)}</p></div>`+
+  $("#pv").innerHTML=`<div class="pv-title"><img src="${LOGO||DEFAULT_LOGO}" alt="" style="height:30px;max-width:180px;object-fit:contain;display:block;margin-bottom:10px"><h3>${esc(C.title)}</h3><p>${esc(C.description)}</p></div>`+
     C.sections.map(s=>`<div class="pv-sec">${esc(s.title)}</div><div class="pv-sec-d">이어서 아래 ${s.items.length}개의 질문에 응답하여 주세요.</div>`+
       s.items.map((q,i)=>`<div class="pv-q"><div class="t">${i+1}. ${esc(q.text)} ${q.required?'<span class="req">*</span>':""}</div>${pvBody(q)}</div>`).join("")).join("");
+  applyPv();
   makeLink(C);
 }
 function pvBody(q){
@@ -414,6 +445,7 @@ function payload(C){
     s:C.sections.map(sec=>({t:sec.title,q:sec.items.map(q=>{const o={y:q.type,x:q.text};if(q.options)o.o=q.options;if(q.required)o.r=1;return o})}))};
   const now=new Date(),ymd=String(now.getFullYear()).slice(2)+String(now.getMonth()+1).padStart(2,"0")+String(now.getDate()).padStart(2,"0");
   body.id=ymd+"-"+hash6(JSON.stringify(body));
+  if(THEME&&THEME!=="#0E2A6B")body.th=THEME;
   const ep=$("#endpoint").value.trim();if(ep)body.e=ep;
   return body;
 }
@@ -471,6 +503,40 @@ $("#copy").onclick=async()=>{
     $("#copyStatus").textContent="자동 복사가 막혀 코드를 선택해 두었습니다. Ctrl+C(⌘+C)로 복사하세요.";
   }
 };
+
+/* ---------- 디자인: 대표 색·로고 ---------- */
+var DEFAULT_LOGO="data:image/png;base64,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";
+var SWATCH=[["#0E2A6B","남색(기본)"],["#004898","블루"],["#00796B","청록"],["#2E7D32","그린"],["#C2185B","로즈"],["#E65100","오렌지"],["#5E35B1","퍼플"],["#37474F","차콜"]];
+var THEME=(mem.get("svb_th")||"#0E2A6B").toUpperCase(), LOGO=mem.get("svb_lg")||"";
+function dMix(h,t){const n=parseInt(h.slice(1),16),c=[n>>16&255,n>>8&255,n&255].map(v=>Math.round(v+(255-v)*t));return "#"+c.map(v=>v.toString(16).padStart(2,"0")).join("")}
+function dLum(h){const n=parseInt(h.slice(1),16);const c=[n>>16&255,n>>8&255,n&255].map(v=>{v/=255;return v<=.03928?v/12.92:Math.pow((v+.055)/1.055,2.4)});return .2126*c[0]+.7152*c[1]+.0722*c[2]}
+function themeOn(){return dLum(THEME)>.45?"#17213a":"#fff"}
+function applyPv(){
+  const pv=$("#pv");if(!pv)return;
+  pv.style.setProperty("--navy",THEME);pv.style.setProperty("--on",themeOn());pv.style.setProperty("--soft",dMix(THEME,.86));
+  pv.style.setProperty("--pvc",THEME);pv.style.setProperty("--pvon",themeOn());pv.style.setProperty("--pvs",dMix(THEME,.86));
+}
+function renderDesign(){
+  $("#swatches").innerHTML=SWATCH.map(([c,n])=>`<button type="button" style="background:${c}" data-c="${c}" title="${n}" aria-label="${n}" aria-pressed="${c===THEME}"></button>`).join("");
+  $$("#swatches button").forEach(b=>b.onclick=()=>setTheme(b.dataset.c));
+  $("#thPick").value=THEME.toLowerCase();
+  $("#logoPv").src=LOGO||DEFAULT_LOGO;
+  $("#logoReset").hidden=!LOGO;
+}
+function setTheme(c){THEME=c.toUpperCase();mem.set("svb_th",THEME);renderDesign();update()}
+$("#thPick").addEventListener("input",e=>setTheme(e.target.value));
+$("#logoBtn").onclick=()=>$("#logoFile").click();
+$("#logoReset").onclick=()=>{LOGO="";mem.set("svb_lg","");renderDesign();update()};
+function shrinkLogo(file){return new Promise((res,rej)=>{const img=new Image();img.onload=()=>{let h=96,w=Math.round(img.width*h/img.height);if(w>400){w=400;h=Math.round(img.height*w/img.width)}
+  const c=document.createElement("canvas");c.width=w;c.height=h;const x=c.getContext("2d");x.drawImage(img,0,0,w,h);
+  let d=c.toDataURL("image/webp",.85);if(!d.startsWith("data:image/webp")||d.length>16000)d=c.toDataURL("image/png");
+  if(d.length>16000){x.globalCompositeOperation="destination-over";x.fillStyle="#fff";x.fillRect(0,0,w,h);d=c.toDataURL("image/jpeg",.82)}
+  URL.revokeObjectURL(img.src);res(d)};img.onerror=()=>rej(new Error("이미지를 읽지 못했습니다."));img.src=URL.createObjectURL(file)})}
+$("#logoFile").onchange=async e=>{const f=e.target.files[0];if(!f)return;
+  try{LOGO=await shrinkLogo(f);mem.set("svb_lg",LOGO);$("#logoNote").innerHTML="로고를 바꿨습니다. 올린 로고는 <b>짧은 링크</b>로 만든 설문에 표시됩니다."}
+  catch(err){$("#logoNote").textContent="로고를 읽지 못했습니다. PNG·JPG 파일로 다시 올려 주세요."}
+  e.target.value="";renderDesign();update()};
+renderDesign();
 renderCats();setExamples();defaults();render();
 /* ---------- 짧은 링크 (홈페이지 빌더 전용) ---------- */
 let LAST=null;
@@ -482,7 +548,7 @@ document.getElementById("mkShort").onclick=async()=>{
   let slug=(document.getElementById("slug").value.trim()||LAST.id).toLowerCase();
   if(!/^[a-z0-9][a-z0-9-]{2,39}$/.test(slug)){st.textContent="영문 소문자·숫자·하이픈으로 3~40자를 써 주세요. 첫 글자는 하이픈이 될 수 없습니다.";st.className="status err";return}
   btn.disabled=true;st.className="status";st.textContent="등록하는 중…";
-  const body=LAST;
+  const body=LOGO?{...LAST,lg:LOGO}:LAST;
   try{
     await fetch(ep,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({action:"register",slug,survey:body})});
     const j=await (await fetch(ep+"?id="+encodeURIComponent(slug))).json();
