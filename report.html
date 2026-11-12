@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>설문 결과 보고서 | 사회및행동과학연구소</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy:#0e2a6b;--soft:#dae3f3;--mid:#8EA9DB;--on:#fff;
+  --ink:#17213a;--muted:#5b6580;--bg:#f2f5fa;--surface:#fff;--line:#d9e0ec;--teal:#17414f;--red:#c00000;--good:#1f7a4d;
+  --font:"Noto Sans KR",system-ui,-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--font);font-size:15px;line-height:1.6}
+.wrap{max-width:960px;margin:0 auto;padding:0 20px}
+.topbar{background:var(--surface);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5}
+.topbar .wrap{display:flex;align-items:center;justify-content:space-between;gap:12px;height:64px}
+.topbar img{height:30px;max-width:180px;object-fit:contain}
+.topbar .t{font-weight:700;color:var(--muted);font-size:13.5px;margin-left:12px;padding-left:12px;border-left:1px solid var(--line)}
+.actions{display:flex;gap:8px;flex-wrap:wrap}
+.btn{font:inherit;font-weight:700;font-size:13.5px;cursor:pointer;border-radius:8px;padding:8px 14px;border:1.5px solid var(--navy);background:var(--navy);color:var(--on)}
+.btn.ghost{background:var(--surface);color:var(--navy)}
+.btn:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+main{padding:28px 0 60px;display:flex;flex-direction:column;gap:16px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:22px}
+.cover{border-top:8px solid var(--navy)}
+.org{font-size:13px;font-weight:700;color:var(--navy);margin:0 0 4px}
+h1{font-size:25px;line-height:1.35;margin:0 0 8px;text-wrap:balance}
+.meta{color:var(--muted);font-size:13.5px;display:flex;gap:6px 18px;flex-wrap:wrap}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px 18px}
+.kpi .k{font-size:12.5px;color:var(--muted);font-weight:700}
+.kpi .v{font-size:28px;font-weight:900;color:var(--navy);font-variant-numeric:tabular-nums;line-height:1.3}
+.kpi .s{font-size:12px;color:var(--muted)}
+@media (max-width:720px){.kpis{grid-template-columns:repeat(2,1fr)}}
+h2{font-size:17px;margin:0 0 12px;color:var(--navy)}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{padding:9px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:middle}
+th{background:var(--navy);color:var(--on);font-weight:700;white-space:nowrap}
+td.n,th.n{text-align:center;font-variant-numeric:tabular-nums}
+.scroll{overflow-x:auto}
+.secbar{background:var(--navy);color:var(--on);border-radius:12px 12px 0 0;padding:12px 20px;font-weight:700;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.secbar span{font-weight:500;opacity:.9;font-size:13.5px}
+.secbody{background:var(--surface);border:1px solid var(--line);border-top:0;border-radius:0 0 12px 12px;padding:6px 20px 10px;margin-top:-16px}
+.q{padding:16px 0;border-bottom:1px solid var(--line);break-inside:avoid}
+.q:last-child{border-bottom:0}
+.q .qt{font-weight:500;color:var(--teal);margin:0 0 10px}
+.q .qt .code{font-size:11.5px;font-weight:700;color:var(--navy);background:var(--soft);border-radius:4px;padding:1px 6px;margin-right:6px}
+.qrow{display:grid;grid-template-columns:150px 1fr;gap:18px;align-items:start}
+@media (max-width:640px){.qrow{grid-template-columns:1fr}}
+.stat .big{font-size:30px;font-weight:900;color:var(--navy);font-variant-numeric:tabular-nums;line-height:1.2}
+.stat .big small{font-size:14px;color:var(--muted);font-weight:500}
+.stat .sub{font-size:12.5px;color:var(--muted)}
+.dist{display:flex;flex-direction:column;gap:4px}
+.bar{display:grid;grid-template-columns:minmax(26px,auto) 1fr 74px;gap:10px;align-items:center;font-size:13px}
+.bar .lab{color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+.bar .tr{height:14px;background:var(--bg);border-radius:4px;overflow:hidden}
+.bar .fl{height:100%;background:var(--navy);border-radius:4px}
+.bar .fl.lo{background:var(--mid)}
+.bar .pc{text-align:right;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+.bar .pc b{color:var(--ink)}
+.dist.opt .bar{grid-template-columns:minmax(120px,38%) 1fr 74px}
+.dist.opt .lab{white-space:normal;color:var(--ink)}
+.ends{display:flex;justify-content:space-between;font-size:11.5px;color:var(--muted);margin-top:2px}
+.texts{max-height:280px;overflow-y:auto;display:flex;flex-direction:column;gap:6px}
+.texts p{margin:0;background:var(--bg);border-radius:8px;padding:8px 12px;font-size:14px;white-space:pre-wrap}
+.note{font-size:13px;color:var(--muted);background:var(--soft);border-radius:8px;padding:10px 14px}
+.warn{color:#8a5a00;background:#fff4dc}
+.toggle{display:flex;gap:8px;align-items:center;font-size:14px;font-weight:500;cursor:pointer}
+.toggle input{width:17px;height:17px;accent-color:var(--navy)}
+.good{color:var(--good);font-weight:700}
+.bad{color:var(--red);font-weight:700}
+.state{padding:60px 20px;text-align:center;color:var(--muted)}
+footer{text-align:center;font-size:12px;color:var(--muted);padding:10px 0 30px}
+@media print{
+  body{background:#fff;font-size:12.5px}
+  .topbar{position:static;border:0}
+  .actions,.noprint{display:none!important}
+  main{padding:0}
+  .card,.secbody,.kpi{border-color:#ccd3e0}
+  .q,.card,.kpi{break-inside:avoid}
+  .texts{max-height:none;overflow:visible}
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
+</style>
+</head>
+<body>
+<div class="topbar"><div class="wrap">
+  <div style="display:flex;align-items:center;min-width:0"><img id="logo" alt=""><span class="t">결과 보고서</span></div>
+  <div class="actions"><button class="btn ghost" id="reload">새로고침</button><button class="btn ghost" id="csv" disabled>응답 데이터 CSV</button><button class="btn" id="print">PDF 저장·인쇄</button></div>
+</div></div>
+<main class="wrap" id="app"><div class="state">보고서를 불러오는 중입니다…</div></main>
+<footer>Report generated by (주)사회및행동과학연구소 서베이 툴</footer>
+<script>
+(function(){
+const ENDPOINT="https://script.google.com/macros/s/AKfycbwHLcYk15dyBXeeLEnEEpRsL7YkopAPLkYKfLNn-JXHk2vuBJ8MTlpL544NSbZxnwc1FA/exec";
+const DEFAULT_LOGO="data:image/png;base64,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";
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const f1=x=>Number.isFinite(x)?x.toFixed(2):"–", pct=x=>Number.isFinite(x)?Math.round(x*100)+"%":"–";
+let D=null,EXCL=true;
+$("#logo").src=DEFAULT_LOGO;
+
+function mixHex(h,t){const n=parseInt(h.slice(1),16),c=[n>>16&255,n>>8&255,n&255].map(v=>Math.round(v+(255-v)*t));return "#"+c.map(v=>v.toString(16).padStart(2,"0")).join("")}
+function lum(h){const n=parseInt(h.slice(1),16);const c=[n>>16&255,n>>8&255,n&255].map(v=>{v/=255;return v<=.03928?v/12.92:Math.pow((v+.055)/1.055,2.4)});return .2126*c[0]+.7152*c[1]+.0722*c[2]}
+function theme(S){
+  if(typeof S.th==="string"&&/^#[0-9a-f]{6}$/i.test(S.th)){const r=document.documentElement.style;r.setProperty("--navy",S.th);r.setProperty("--soft",mixHex(S.th,.86));r.setProperty("--mid",mixHex(S.th,.55));r.setProperty("--on",lum(S.th)>.45?"#17213a":"#fff")}
+  if(typeof S.lg==="string"&&/^data:image\/(png|jpeg|webp|gif);base64,[A-Za-z0-9+/=]+$/.test(S.lg))$("#logo").src=S.lg;
+}
+function fail(m){$("#app").innerHTML=`<div class="card state"><b style="color:var(--ink);font-size:17px">보고서를 열 수 없습니다</b><p>${esc(m)}</p></div>`}
+
+async function load(){
+  const h=decodeURIComponent(location.hash.slice(1)),i=h.lastIndexOf(".");
+  if(!h||i<1){fail("보고서 링크가 올바르지 않습니다. 서베이 툴에서 받은 보고서 링크 전체로 접속해 주세요.");return}
+  const slug=h.slice(0,i),key=h.slice(i+1);
+  $("#app").innerHTML=`<div class="state">보고서를 불러오는 중입니다…</div>`;
+  try{
+    const r=await fetch(ENDPOINT+"?report="+encodeURIComponent(slug)+"&key="+encodeURIComponent(key));
+    const j=await r.json();
+    if(!j.ok){fail(j.error==="forbidden"?"보고서 키가 맞지 않습니다. 서베이 툴에서 받은 보고서 링크를 다시 확인해 주세요.":j.error==="not_found"?"등록되지 않은 설문입니다.":"보고서를 만들지 못했습니다.");return}
+    D=prepare(j);theme(D.S);render();$("#csv").disabled=false;
+  }catch(e){fail("응답 데이터를 불러오지 못했습니다. 인터넷 연결을 확인한 뒤 새로고침해 주세요.")}
+}
+
+/* ---------- data ---------- */
+function prepare(j){
+  const S=j.survey,research=S.m==="r",H=(j.headers||[]).map(String),rows=j.rows||[];
+  const col=name=>H.indexOf(name);
+  const Q=[];
+  S.s.forEach((sec,si)=>sec.q.forEach((q,qi)=>{
+    const name=research&&q.c?q.c:`${si+1}-${qi+1}. ${q.x}`;
+    let c=col(name);
+    Q.push({...q,si,qi,name,col:c});
+  }));
+  const dur=col(research?"DURATION":"응답 소요(초)");
+  const att=Q.find(q=>q.c==="ATT1");
+  return {S,research,H,rows,Q,dur,att,tcol:0};
+}
+function num(v){if(v===""||v==null)return NaN;const n=Number(v);return Number.isFinite(n)?n:NaN}
+function activeRows(){
+  if(!D.att||!EXCL||!D.research)return D.rows;
+  return D.rows.filter(r=>num(r[D.att.col])===4);
+}
+function vals(q,rows){return rows.map(r=>r[q.col])}
+function scaleVals(q,rows,rev){return vals(q,rows).map(num).filter(Number.isFinite).map(v=>rev&&q.v&&q.y==="scale"?8-v:v)}
+function mean(a){return a.length?a.reduce((x,y)=>x+y,0)/a.length:NaN}
+function sd(a){if(a.length<2)return NaN;const m=mean(a);return Math.sqrt(a.reduce((x,y)=>x+(y-m)**2,0)/(a.length-1))}
+function variance(a){const s=sd(a);return s*s}
+function alpha(items,rows){
+  const k=items.length;if(k<2)return NaN;
+  const M=rows.map(r=>items.map(q=>{let v=num(r[q.col]);if(q.v&&Number.isFinite(v))v=8-v;return v})).filter(x=>x.every(Number.isFinite));
+  if(M.length<3)return NaN;
+  const iv=items.map((_,i)=>variance(M.map(x=>x[i]))).reduce((a,b)=>a+b,0);
+  const tv=variance(M.map(x=>x.reduce((a,b)=>a+b,0)));
+  return tv>0?k/(k-1)*(1-iv/tv):NaN;
+}
+function fmtDate(s){const d=new Date(s);return isNaN(d)?"":`${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,"0")}.${String(d.getDate()).padStart(2,"0")}`}
+
+/* ---------- render ---------- */
+function render(){
+  const {S,research,Q}=D,rows=activeRows(),N=rows.length,all=D.rows.length;
+  document.title=`${S.t} 결과 보고서`;
+  const dates=D.rows.map(r=>new Date(r[0])).filter(d=>!isNaN(d)).sort((a,b)=>a-b);
+  const durs=rows.map(r=>num(r[D.dur])).filter(v=>Number.isFinite(v)&&v>0&&v<7200).sort((a,b)=>a-b);
+  const medDur=durs.length?durs[Math.floor(durs.length/2)]:NaN;
+  const scaleQ=Q.filter(q=>q.y==="scale"&&q.col>=0&&q.k!=="주의 확인");
+  const allScale=[].concat(...scaleQ.map(q=>scaleVals(q,rows,research)));
+  const top2=allScale.length?allScale.filter(v=>v>=6).length/allScale.length:NaN;
+  let h=`<div class="card cover">${S.o?`<p class="org">${esc(S.o)}</p>`:""}<h1>${esc(S.t)}</h1>
+    <div class="meta"><span>응답 기간 ${dates.length?fmtDate(dates[0])+" ~ "+fmtDate(dates[dates.length-1]):"–"}</span><span>보고서 생성 ${fmtDate(new Date())} ${new Date().toTimeString().slice(0,5)}</span>${S.irb?`<span>IRB ${esc(S.irb)}</span>`:""}</div></div>
+  <div class="kpis">
+    <div class="kpi"><div class="k">분석 응답자</div><div class="v">${N}<small style="font-size:15px;color:var(--muted);font-weight:500">명</small></div><div class="s">${D.att&&research&&EXCL&&all!==N?`전체 ${all}명 중 주의 확인 통과`:`전체 응답 ${all}명`}</div></div>
+    <div class="kpi"><div class="k">척도 문항 전체 평균</div><div class="v">${f1(mean(allScale))}</div><div class="s">7점 만점${research?" · 역문항 반영":""}</div></div>
+    <div class="kpi"><div class="k">긍정 응답 비율</div><div class="v">${pct(top2)}</div><div class="s">6~7점 응답 비중</div></div>
+    <div class="kpi"><div class="k">응답 소요 시간</div><div class="v">${Number.isFinite(medDur)?(medDur>=60?Math.round(medDur/60)+"분":Math.round(medDur)+"초"):"–"}</div><div class="s">중앙값</div></div>
+  </div>`;
+  if(!all){h+=`<div class="card state">아직 응답이 없습니다. 설문 링크를 배포한 뒤 다시 확인해 주세요.</div>`;$("#app").innerHTML=h;return}
+  if(research&&D.att){
+    const fails=all-D.rows.filter(r=>num(r[D.att.col])===4).length;
+    h+=`<div class="card noprint" style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center"><label class="toggle"><input type="checkbox" id="excl" ${EXCL?"checked":""}> 주의 확인 문항(ATT1)을 통과하지 못한 응답 제외</label><span class="meta">불성실 응답 <b class="${fails?"bad":"good"}">${fails}명</b> (${pct(all?fails/all:NaN)})</span></div>`;
+  }
+  // section / construct summary
+  const groups=[];
+  S.s.forEach((sec,si)=>{
+    const qs=Q.filter(q=>q.si===si&&q.y==="scale"&&q.col>=0&&q.k!=="주의 확인");
+    if(qs.length)groups.push({name:research?(qs[0].k||sec.t):sec.t,code:research&&qs[0].c?qs[0].c.replace(/\d+(_R)?$/,""):"",qs});
+  });
+  if(groups.length){
+    h+=`<div class="card"><h2>${research?"구성개념별 요약":"섹션별 요약"}</h2><div class="scroll"><table><thead><tr><th>${research?"구성개념":"섹션"}</th><th class="n">문항</th><th class="n">평균</th><th class="n">표준편차</th><th class="n">긍정(6~7)</th>${research?'<th class="n">Cronbach α</th>':""}</tr></thead><tbody>`+
+    groups.map(g=>{
+      const per=rows.map(r=>{const v=g.qs.map(q=>{let x=num(r[q.col]);if(research&&q.v&&Number.isFinite(x))x=8-x;return x}).filter(Number.isFinite);return v.length?mean(v):NaN}).filter(Number.isFinite);
+      const flat=[].concat(...g.qs.map(q=>scaleVals(q,rows,research)));
+      const a=research?alpha(g.qs,rows):NaN;
+      return `<tr><td>${esc(g.name)}${g.code?` <span class="meta" style="display:inline">${esc(g.code)}</span>`:""}</td><td class="n">${g.qs.length}</td><td class="n"><b>${f1(mean(per))}</b></td><td class="n">${f1(sd(per))}</td><td class="n">${pct(flat.length?flat.filter(v=>v>=6).length/flat.length:NaN)}</td>${research?`<td class="n ${Number.isFinite(a)?(a>=.7?"good":a<.6?"bad":""):""}">${Number.isFinite(a)?a.toFixed(3):"–"}</td>`:""}</tr>`;
+    }).join("")+`</tbody></table></div>${research?`<p class="note" style="margin:12px 0 0">역문항(_R)은 8에서 뺀 값으로 바꿔 계산했습니다. α는 결측 없는 응답으로 계산하며, .70 이상을 일반적인 신뢰도 기준으로 봅니다.</p>`:""}</div>`;
+  }
+  // questions by section
+  S.s.forEach((sec,si)=>{
+    const qs=Q.filter(q=>q.si===si);
+    const sc=qs.filter(q=>q.y==="scale"&&q.col>=0&&q.k!=="주의 확인");
+    const sm=sc.length?mean([].concat(...sc.map(q=>scaleVals(q,rows,research)))):NaN;
+    h+=`<div class="secbar">${si+1}. ${esc(sec.t)}${Number.isFinite(sm)?`<span>섹션 평균 ${f1(sm)}</span>`:""}</div><div class="secbody">`+qs.map((q,i)=>qBlock(q,i+1,rows)).join("")+`</div>`;
+  });
+  $("#app").innerHTML=h;
+  const ex=$("#excl");if(ex)ex.onchange=()=>{EXCL=ex.checked;render()};
+}
+function qBlock(q,no,rows){
+  const head=`<p class="qt">${q.c&&D.research?`<span class="code">${esc(q.c)}</span>`:""}${no}. ${esc(q.x)}</p>`;
+  if(q.col<0)return `<div class="q">${head}<p class="meta">응답 시트에서 이 문항의 열을 찾지 못했습니다.</p></div>`;
+  if(q.y==="scale"||q.y==="nps"){
+    const raw=vals(q,rows).map(num).filter(Number.isFinite),n=raw.length;
+    const [a,b]=q.y==="scale"?[1,7]:[0,10];
+    const L=q.l&&q.l.length===2?q.l:(q.y==="scale"?["전혀 그렇지 않다","매우 그렇다"]:["전혀 추천하지 않는다","매우 추천한다"]);
+    const cnt={};raw.forEach(v=>cnt[v]=(cnt[v]||0)+1);
+    const max=Math.max(1,...Object.values(cnt));
+    let bars="";for(let k=b;k>=a;k--){const c=cnt[k]||0;bars+=`<div class="bar"><span class="lab">${k}</span><span class="tr"><span class="fl ${q.y==="scale"&&k<=3?"lo":""}" style="width:${(c/max*100).toFixed(1)}%;display:block"></span></span><span class="pc"><b>${c}</b> · ${n?Math.round(c/n*100):0}%</span></div>`}
+    let stat;
+    if(q.y==="nps"){const pro=raw.filter(v=>v>=9).length,det=raw.filter(v=>v<=6).length;stat=`<div class="big">${n?Math.round((pro-det)/n*100):"–"}<small> NPS</small></div><div class="sub">추천 ${pro} · 중립 ${n-pro-det} · 비추천 ${det}</div><div class="sub">평균 ${f1(mean(raw))} · 응답 ${n}</div>`}
+    else{const t2=n?raw.filter(v=>v>=6).length/n:NaN;stat=`<div class="big">${f1(mean(raw))}<small> / 7</small></div><div class="sub">긍정(6~7) ${pct(t2)}</div><div class="sub">표준편차 ${f1(sd(raw))} · 응답 ${n}</div>${q.v?`<div class="sub">역문항 · 원점수 기준</div>`:""}`}
+    return `<div class="q">${head}<div class="qrow"><div class="stat">${stat}</div><div><div class="dist">${bars}</div><div class="ends"><span>${b} ${esc(L[1])}</span><span>${a} ${esc(L[0])}</span></div></div></div></div>`;
+  }
+  if(q.y==="choice"||q.y==="checkbox"){
+    const raw=vals(q,rows).filter(v=>v!==""&&v!=null).map(String);
+    const n=raw.length,cnt=new Map((q.o||[]).map(o=>[o,0]));let other=[];
+    raw.forEach(v=>{const parts=q.y==="checkbox"?v.split(/,\s(?=[^,]*$)|,\s/):[v];
+      (q.y==="checkbox"?splitMulti(v,q.o||[]):[v]).forEach(p=>{if(p.startsWith("기타:")){cnt.set("기타",(cnt.get("기타")||0)+1);other.push(p.replace(/^기타:\s*/,""))}else cnt.set(p,(cnt.get(p)||0)+1)})});
+    const max=Math.max(1,...cnt.values());
+    const bars=[...cnt.entries()].map(([o,c])=>`<div class="bar"><span class="lab">${esc(o)}</span><span class="tr"><span class="fl" style="width:${(c/max*100).toFixed(1)}%;display:block"></span></span><span class="pc"><b>${c}</b> · ${n?Math.round(c/n*100):0}%</span></div>`).join("");
+    return `<div class="q">${head}<div class="dist opt">${bars}</div><p class="meta" style="margin:8px 0 0">응답 ${n}명${q.y==="checkbox"?" · 복수 응답이라 합계가 100%를 넘을 수 있습니다":""}</p>${other.length?`<div class="texts" style="margin-top:8px">${other.map(t=>`<p>기타: ${esc(t)}</p>`).join("")}</div>`:""}</div>`;
+  }
+  const raw=vals(q,rows).filter(v=>v!==""&&v!=null).map(String);
+  if(q.y==="text"&&raw.length&&raw.every(v=>Number.isFinite(Number(v)))){
+    const ns=raw.map(Number);return `<div class="q">${head}<div class="stat"><div class="big">${f1(mean(ns))}</div><div class="sub">숫자 응답 평균 · 표준편차 ${f1(sd(ns))} · 최소 ${Math.min(...ns)} · 최대 ${Math.max(...ns)} · 응답 ${ns.length}</div></div></div>`;
+  }
+  return `<div class="q">${head}<p class="meta" style="margin:0 0 8px">응답 ${raw.length}건</p><div class="texts">${raw.map(t=>`<p>${esc(t)}</p>`).join("")||'<p class="meta">응답 없음</p>'}</div></div>`;
+}
+function splitMulti(v,opts){
+  // 선택지 문구에 쉼표가 있어도 최대한 원래 선택지로 맞춰 나눕니다
+  const out=[];let rest=v;
+  const sorted=[...opts].sort((a,b)=>b.length-a.length);
+  while(rest.length){
+    rest=rest.replace(/^,\s*/,"");if(!rest)break;
+    const hit=sorted.find(o=>rest===o||rest.startsWith(o+", "));
+    if(hit){out.push(hit);rest=rest.slice(hit.length);continue}
+    const i=rest.indexOf(", ");if(i<0){out.push(rest);break}
+    out.push(rest.slice(0,i));rest=rest.slice(i);
+  }
+  return out;
+}
+function csv(){
+  const lines=[D.H,...D.rows].map(r=>r.map(v=>{v=String(v??"");return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v}).join(","));
+  const blob=new Blob(["﻿"+lines.join("\n")],{type:"text/csv;charset=utf-8"});
+  const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=(D.S.t||"survey").replace(/[\\/:*?"<>|]/g," ")+".csv";document.body.appendChild(a);a.click();a.remove();
+}
+$("#reload").onclick=load;$("#print").onclick=()=>window.print();$("#csv").onclick=()=>D&&csv();
+window.addEventListener("hashchange",load);
+load();
+})();
+</script>
+</body>
+</html>
