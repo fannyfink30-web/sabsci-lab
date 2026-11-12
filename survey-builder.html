@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>만족도 설문 빌더</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+/* Layout: 왼쪽 문항 고르기·수정, 오른쪽 고정 미리보기/스크립트. 남색 주색, 연청 카드, 빨강은 산출물 강조만 */
+:root{
+  --ink:#17213a; --muted:#5b6580; --bg:#f5f7fb; --surface:#fff; --line:#dde3ef;
+  --navy:#0e2a6b; --soft:#dae3f3; --red:#c00000; --on:#ffffff;
+  --font:"Noto Sans KR",system-ui,-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --ink:#e7ebf5;--muted:#a2abc2;--bg:#0f1424;--surface:#171e33;--line:#2a3452;--navy:#8fb0ff;--soft:#1f2a48;--red:#ff7b7b;--on:#0f1424;color-scheme:dark}}
+:root[data-theme="dark"]{--ink:#e7ebf5;--muted:#a2abc2;--bg:#0f1424;--surface:#171e33;--line:#2a3452;--navy:#8fb0ff;--soft:#1f2a48;--red:#ff7b7b;--on:#0f1424;color-scheme:dark}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--font);font-size:14.5px;line-height:1.55}
+header{background:var(--surface);border-bottom:1px solid var(--line)}
+.wrap{max-width:1240px;margin:0 auto;padding:0 20px}
+.top{display:flex;align-items:center;gap:12px;padding:16px 0}
+.mark{width:10px;height:36px;background:var(--navy);border-radius:2px}
+.top h1{font-size:19px;font-weight:900;margin:0;color:var(--navy)}
+.top p{margin:0;color:var(--muted);font-size:13px}
+.layout{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:20px;padding:20px 0 60px;align-items:start}
+@media (max-width:900px){.layout{grid-template-columns:1fr}}
+.side{position:sticky;top:12px;display:flex;flex-direction:column;gap:12px;max-height:calc(100vh - 24px)}
+@media (max-width:900px){.side{position:static;max-height:none}}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px}
+.stack{display:flex;flex-direction:column;gap:14px}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+h2{font-size:15px;margin:0 0 10px;color:var(--navy);display:flex;align-items:center;gap:8px}
+h2 .no{font-size:12px;font-weight:900;background:var(--navy);color:var(--on);border-radius:4px;padding:1px 7px;font-variant-numeric:tabular-nums}
+label{display:block;font-size:12.5px;font-weight:700;margin-bottom:3px}
+.hint{font-weight:400;color:var(--muted);font-size:12px}
+input,select,textarea{width:100%;font:inherit;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:7px;padding:8px 10px}
+textarea{resize:vertical;min-height:64px}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--navy);outline-offset:0}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media (max-width:560px){.g2{grid-template-columns:1fr}}
+.cats{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+@media (max-width:640px){.cats{grid-template-columns:repeat(2,1fr)}}
+.cats button{all:unset;cursor:pointer;text-align:center;padding:9px 6px;border:1px solid var(--line);border-radius:8px;font-size:13px;font-weight:700;background:var(--bg)}
+.cats button.on{background:var(--navy);border-color:var(--navy);color:var(--on)}
+.cats button:focus-visible,.btn:focus-visible,.tabs button:focus-visible{outline:2px solid var(--red);outline-offset:2px}
+.sec{border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--surface)}
+.sec-h{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:10px 14px;background:var(--soft)}
+.sec-h b{color:var(--navy)}
+.sec-h .cnt{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.item{display:grid;grid-template-columns:22px 1fr auto;gap:10px;padding:10px 14px;border-top:1px solid var(--line);align-items:start}
+.item.off{opacity:.55}
+.item.off .body input,.item.off .body textarea{background:transparent}
+.item input[type=checkbox]{width:18px;height:18px;margin:7px 0 0;accent-color:var(--navy)}
+.body{display:flex;flex-direction:column;gap:6px;min-width:0}
+.meta{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.chip{font-size:11px;font-weight:700;padding:1px 7px;border-radius:999px;background:var(--soft);color:var(--navy);white-space:nowrap}
+.chip.c{background:transparent;border:1px solid var(--line);color:var(--muted)}
+.opts{font-size:13px}
+.tools{display:flex;gap:2px}
+.icon{all:unset;cursor:pointer;width:26px;height:26px;display:grid;place-items:center;border-radius:6px;color:var(--muted);font-size:13px}
+.icon:hover{background:var(--soft);color:var(--navy)}
+.icon:focus-visible{outline:2px solid var(--navy)}
+.add{display:flex;gap:6px;padding:10px 14px;border-top:1px dashed var(--line);flex-wrap:wrap}
+.add select{width:auto}
+.add input{flex:1;min-width:180px}
+.btn{font:inherit;font-weight:700;cursor:pointer;border-radius:8px;padding:8px 14px;border:1px solid var(--navy);background:var(--navy);color:var(--on)}
+.btn.ghost{background:transparent;color:var(--navy)}
+.btn.sm{padding:5px 10px;font-size:12.5px}
+.tabs{display:flex;gap:4px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:4px}
+.tabs button{all:unset;cursor:pointer;flex:1;text-align:center;padding:8px;border-radius:7px;font-weight:700;font-size:13.5px;color:var(--muted)}
+.tabs button.on{background:var(--navy);color:var(--on)}
+.pane{overflow-y:auto;min-height:0}
+.summary{display:flex;gap:14px;flex-wrap:wrap;font-size:12.5px;color:var(--muted)}
+.summary b{color:var(--ink);font-variant-numeric:tabular-nums}
+/* preview: Google Forms-like */
+.pv{display:flex;flex-direction:column;gap:10px}
+.pv-title{border-top:8px solid var(--navy);border-radius:10px;background:var(--surface);border-left:1px solid var(--line);border-right:1px solid var(--line);border-bottom:1px solid var(--line);padding:16px}
+.pv-title h3{margin:0 0 6px;font-size:20px;text-wrap:balance}
+.pv-title p{margin:0;white-space:pre-wrap;font-size:13.5px;color:var(--muted)}
+.pv-sec{background:var(--navy);color:var(--on);border-radius:8px 8px 0 0;padding:8px 14px;font-weight:700;font-size:13.5px}
+.pv-sec-d{background:var(--surface);border:1px solid var(--line);border-top:0;border-radius:0 0 8px 8px;padding:8px 14px;font-size:13px;color:var(--muted);margin-top:-10px}
+.pv-q{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:12px 14px;font-size:13.5px}
+.pv-q .t{font-weight:500;margin-bottom:8px}
+.pv-q .req{color:var(--red)}
+.scale{display:flex;align-items:center;gap:8px;font-size:11.5px;color:var(--muted);flex-wrap:wrap}
+.scale .dots{display:flex;gap:6px}
+.scale .d{display:flex;flex-direction:column;align-items:center;gap:2px;font-variant-numeric:tabular-nums}
+.scale .d i{width:14px;height:14px;border:1.5px solid var(--muted);border-radius:50%;display:block}
+.pv-opt{display:flex;gap:8px;align-items:center;font-size:13px;margin:3px 0}
+.pv-opt i{width:13px;height:13px;border:1.5px solid var(--muted);display:block;flex:none}
+.pv-opt i.r{border-radius:50%}
+.pv-line{border-bottom:1px dotted var(--muted);width:60%;height:18px}
+pre{margin:0;font-family:var(--mono);font-size:12px;line-height:1.5;white-space:pre;overflow:auto;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:12px;max-height:340px}
+ol.guide{margin:0;padding-left:20px;font-size:13.5px}
+ol.guide li{margin:5px 0}
+code{font-family:var(--mono);font-size:12.5px;background:var(--soft);padding:1px 5px;border-radius:4px}
+.out{color:var(--red);font-weight:700}
+.status{font-size:12.5px;color:var(--muted);min-height:1.3em}
+.toggle{display:flex;gap:8px;align-items:center;font-size:13px;font-weight:500}
+.toggle input{width:16px;height:16px;accent-color:var(--navy)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<header><div class="wrap top">
+  <div class="mark" aria-hidden="true"></div>
+  <div><h1>만족도 설문 빌더</h1><p>카테고리별 표준 문항을 골라 다듬으면 바로 설문 링크가 나오고, 응답은 내 구글 스프레드시트에 모입니다</p></div>
+</div></header>
+
+<div class="wrap layout">
+  <div class="stack">
+    <div class="card stack">
+      <h2><span class="no">01</span>조사 대상</h2>
+      <div>
+        <label>제품·서비스 카테고리</label>
+        <div class="cats" id="cats"></div>
+      </div>
+      <div class="g2">
+        <div><label for="target">조사 대상 이름 <span class="hint">비우면 "이 제품"처럼 씁니다</span></label><input id="target" placeholder="예: 시카 진정 토너"></div>
+        <div><label for="org">조사 기관·브랜드명</label><input id="org" placeholder="예: OO코스메틱"></div>
+      </div>
+      <div><label for="title">설문 제목</label><input id="title"></div>
+      <div><label for="desc">안내문</label><textarea id="desc" rows="4"></textarea></div>
+      <div class="row" style="gap:18px">
+        <label class="toggle" for="reqAll"><input type="checkbox" id="reqAll" checked> 모든 문항 필수 응답</label>
+        <label class="toggle" for="nps"><input type="checkbox" id="nps"> 추천지수(NPS, 0~10점) 문항 추가</label>
+      </div>
+    </div>
+
+    <div class="stack">
+      <div class="row" style="justify-content:space-between">
+        <h2 style="margin:0"><span class="no">02</span>문항 고르기 · 수정</h2>
+        <div class="row"><button class="btn ghost sm" id="allOn">전체 선택</button><button class="btn ghost sm" id="reset">이 카테고리 기본값으로</button></div>
+      </div>
+      <p class="hint" style="margin:-6px 0 0">체크한 문항만 설문에 들어갑니다. 문구와 선택지는 바로 고칠 수 있고, 선택지는 쉼표로 구분합니다. ↑↓로 순서를 바꿉니다.</p>
+      <div id="secs" class="stack"></div>
+    </div>
+  </div>
+
+  <aside class="side">
+    <div class="tabs" role="tablist">
+      <button class="on" data-tab="pv" role="tab">미리보기</button>
+      <button data-tab="sc" role="tab">설문 링크</button>
+    </div>
+    <div class="card summary" id="summary"></div>
+    <div class="pane" id="pane-pv"><div class="pv" id="pv"></div></div>
+    <div class="pane" id="pane-sc" hidden>
+      <div class="stack">
+        <div class="card stack">
+          <div><label for="endpoint">응답 수집 주소 <span class="hint">처음 한 번만 붙여 넣으면 이 브라우저가 기억합니다</span></label>
+            <input id="endpoint" placeholder="https://script.google.com/macros/s/…/exec"></div>
+          <div class="status" id="epStatus"></div>
+          <div><label for="link">설문 링크 <span class="hint">이 링크를 응답자에게 보내세요</span></label>
+            <textarea id="link" readonly rows="3" style="font-family:var(--mono);font-size:12px"></textarea></div>
+          <div class="row"><button class="btn" id="copyLink">링크 복사</button><a class="btn ghost" id="openLink" href="#" target="_blank" rel="noopener" style="text-decoration:none">새 창에서 열어 보기</a><span class="status" id="linkStatus"></span></div>
+          <div class="row" style="align-items:flex-start;gap:14px">
+            <div id="qr" style="background:#fff;padding:10px;border-radius:8px;border:1px solid var(--line);line-height:0"></div>
+            <p class="hint" id="qrNote" style="flex:1;min-width:160px;margin:0">QR 코드는 이미지를 길게 누르거나 오른쪽 클릭해 저장할 수 있습니다. 문항을 바꾸면 새 링크가 생기고, 응답은 시트의 새 탭에 따로 모입니다.</p>
+          </div>
+        </div>
+        <details class="card" id="setup">
+          <summary style="cursor:pointer;font-weight:700;color:var(--navy)">처음 한 번만: 응답 시트 연결하기</summary>
+          <ol class="guide" style="margin-top:10px">
+            <li>응답을 모을 <a href="https://sheets.new" target="_blank" rel="noopener">구글 스프레드시트를 새로 만듭니다</a>. <span class="hint">(sheets.new)</span></li>
+            <li>시트 메뉴 <b>확장 프로그램 → Apps Script</b>를 열고, 기존 코드를 지운 뒤 아래 코드를 붙여 넣고 저장합니다.</li>
+            <li><b>배포 → 새 배포 → 웹 앱</b>을 고르고 <b>실행: 나</b>, <b>액세스: 모든 사용자</b>로 배포합니다. 권한 승인 창이 뜨면 허용합니다.</li>
+            <li>나온 <span class="out">웹 앱 URL</span>을 위의 ‘응답 수집 주소’ 칸에 붙여 넣습니다.</li>
+            <li>홈페이지 저장소(sabsci-lab)에 <code>survey.html</code>을 한 번 올립니다. 그러면 설문 링크가 sabsci-lab.com/survey로 열립니다.</li>
+          </ol>
+          <div class="row" style="margin:6px 0 8px"><button class="btn sm" id="copy">코드 복사</button><span class="status" id="copyStatus"></span></div>
+          <pre id="code" tabindex="0" aria-label="응답 수집 Apps Script 코드"></pre>
+          <div style="margin-top:10px"><label for="base">설문 페이지 주소 <span class="hint">바꿀 일이 없으면 그대로 두세요</span></label><input id="base"></div>
+        </details>
+      </div>
+    </div>
+  </aside>
+</div>
+
+<script>
+(function(){
+const $=s=>document.querySelector(s),$$=s=>Array.from(document.querySelectorAll(s));
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const T="{대상}";
+
+/* ---------- library ---------- */
+const SECS=[
+  {key:"overall",name:"전반적 만족도"},
+  {key:"attr",name:"세부 속성 평가"},
+  {key:"behavior",name:"구매·이용 행동"},
+  {key:"opinion",name:"의견"},
+  {key:"demo",name:"응답자 정보"}
+];
+const TYPE={scale:"1~7점",nps:"0~10점",choice:"객관식",checkbox:"복수선택",text:"단답형",paragraph:"서술형"};
+const CATS={
+  cosmetics:{label:"화장품",noun:"이 제품",verb:"구매",
+    attr:[["사용감(발림성·흡수력)이 좋다.",1],["기대했던 효과(보습·진정 등)를 느낄 수 있었다.",1],["사용 후 피부 자극이 없었다.",1],["향이 마음에 든다.",0],["용기·패키지가 사용하기 편리하다.",1],["패키지 디자인이 마음에 든다.",0],["성분을 믿을 수 있다.",1],["용량이 적절하다.",0]],
+    channels:"올리브영 등 H&B스토어, 브랜드 자사몰, 쿠팡·네이버 등 온라인몰, 백화점·면세점, 다이소, 라이브커머스"},
+  food:{label:"식품·음료",noun:"이 제품",verb:"구매",
+    attr:[["맛이 좋다.",1],["신선도와 품질이 만족스럽다.",1],["양(중량)이 적절하다.",1],["원재료와 성분을 믿을 수 있다.",1],["포장이 보관하고 먹기에 편리하다.",0],["조리·섭취가 간편하다.",0],["패키지 디자인이 마음에 든다.",0],["위생과 안전을 믿을 수 있다.",1]],
+    channels:"대형마트, 편의점, 온라인몰, 새벽배송(마켓컬리 등), 브랜드 자사몰, 전통시장·동네마트"},
+  restaurant:{label:"외식·카페",noun:"이 매장",verb:"이용",
+    attr:[["음식·음료의 맛이 좋다.",1],["메뉴 구성이 다양하다.",0],["직원이 친절하다.",1],["주문 후 제공까지 걸리는 시간이 적절하다.",1],["매장이 청결하다.",1],["매장 분위기와 인테리어가 마음에 든다.",0],["위치와 접근성이 좋다.",0],["주문·결제가 편리하다.",0]],
+    channels:"매장 방문, 포장, 배달앱(배달의민족·쿠팡이츠 등), 키오스크, 테이블오더"},
+  household:{label:"생활용품",noun:"이 제품",verb:"구매",
+    attr:[["기능과 성능이 기대한 만큼이다.",1],["오래 써도 쉽게 망가지지 않는다.",1],["사용하기 편리하다.",1],["디자인이 마음에 든다.",0],["안전하고 몸에 해롭지 않은 성분을 쓴다.",1],["크기·용량이 적절하다.",0],["보관하기 편리하다.",0],["친환경적인 제품이다.",0]],
+    channels:"대형마트, 다이소, 쿠팡·네이버 등 온라인몰, 브랜드 자사몰, 편의점, 홈쇼핑"},
+  electronics:{label:"가전·전자",noun:"이 제품",verb:"구매",
+    attr:[["성능이 만족스럽다.",1],["사용법을 쉽게 익힐 수 있다.",1],["디자인이 마음에 든다.",0],["소음과 발열이 적다.",0],["전력 소비(에너지 효율)가 만족스럽다.",0],["고장 없이 안정적으로 작동한다.",1],["배송·설치 서비스가 만족스럽다.",1],["A/S와 고객센터 응대가 만족스럽다.",1]],
+    channels:"가전 전문매장, 백화점, 쿠팡·네이버 등 온라인몰, 브랜드 공식몰, 홈쇼핑"},
+  fashion:{label:"패션·의류",noun:"이 제품",verb:"구매",
+    attr:[["디자인이 마음에 든다.",1],["사이즈와 핏이 잘 맞는다.",1],["소재와 착용감이 좋다.",1],["봉제와 마감 품질이 좋다.",1],["세탁 후에도 변형이 적다.",0],["색상이 상품 이미지와 같다.",0],["다른 옷과 코디하기 쉽다.",0],["교환·반품 절차가 편리하다.",0]],
+    channels:"오프라인 매장, 무신사·29CM 등 패션 플랫폼, 브랜드 자사몰, 백화점, 아울렛, SNS 마켓"},
+  ecommerce:{label:"쇼핑몰·배송",noun:"이 쇼핑몰",verb:"이용",
+    attr:[["원하는 상품을 쉽게 찾을 수 있다.",1],["상품 상세정보가 충분하고 정확하다.",1],["주문과 결제가 간편하다.",1],["배송이 빠르다.",1],["포장 상태가 좋다.",0],["받은 상품이 설명과 같다.",1],["교환·환불이 간편하다.",0],["고객센터 응대가 만족스럽다.",0]],
+    channels:"PC 웹사이트, 모바일 앱, 모바일 웹, 카카오톡 채널, 라이브방송"},
+  service:{label:"서비스업",noun:"이 서비스",verb:"이용",
+    attr:[["직원(강사·전문가)이 전문성을 갖추고 있다.",1],["직원이 친절하다.",1],["예약과 일정 변경이 편리하다.",1],["시설이 청결하다.",1],["약속한 시간을 잘 지킨다.",0],["서비스 내용을 충분히 설명해 준다.",0],["서비스 결과가 만족스럽다.",1],["이용 요금 체계가 명확하다.",0]],
+    channels:"방문 예약, 전화 예약, 네이버 예약, 앱 예약, 지인 소개"},
+  app:{label:"앱·디지털",noun:"이 앱",verb:"이용",
+    attr:[["화면 구성이 이해하기 쉽다.",1],["원하는 기능을 쉽게 찾을 수 있다.",1],["속도가 빠르고 안정적이다.",1],["오류가 거의 없다.",1],["필요한 기능을 모두 갖추고 있다.",0],["개인정보를 안심하고 맡길 수 있다.",1],["알림 빈도가 적절하다.",0],["디자인이 마음에 든다.",0]],
+    channels:"앱스토어 검색, 광고, 지인 추천, SNS, 기사·블로그"},
+  stay:{label:"숙박·여행",noun:"이 숙소",verb:"이용",
+    attr:[["객실이 청결하다.",1],["편의시설이 잘 갖춰져 있다.",1],["직원 응대가 친절하다.",1],["체크인·체크아웃이 편리하다.",0],["위치와 교통이 편리하다.",1],["조식 등 부대서비스가 만족스럽다.",0],["소음 없이 편안하게 쉴 수 있었다.",0],["예약 정보와 실제가 같았다.",1]],
+    channels:"야놀자·여기어때 등 국내 앱, 아고다·부킹닷컴 등 해외 앱, 공식 홈페이지, 전화, 여행사"}
+};
+function build(catKey){
+  const c=CATS[catKey];let n=0;const id=()=>"i"+(++n)+"_"+catKey;
+  const L=[];
+  [["전반적으로 {대상}에 만족한다.",1],["{대상}은(는) 기대했던 것보다 좋았다.",1],["{대상}은(는) 가격에 비해 가치가 있다.",1],[`다음에도 {대상}을(를) 다시 ${c.verb}할 의향이 있다.`,1],["주변 사람에게 {대상}을(를) 추천할 의향이 있다.",1]]
+    .forEach(([t,on])=>L.push({id:id(),sec:"overall",type:"scale",text:t,on:!!on}));
+  c.attr.forEach(([t,on])=>L.push({id:id(),sec:"attr",type:"scale",text:t,on:!!on}));
+  L.push({id:id(),sec:"behavior",type:"choice",text:`{대상}을(를) 주로 어디에서 ${c.verb}하셨나요?`,options:c.channels.split(/\s*,\s*/).concat("기타"),on:true});
+  L.push({id:id(),sec:"behavior",type:"choice",text:`{대상}을(를) 얼마나 자주 ${c.verb}하시나요?`,options:["이번이 처음","3개월에 1회 이하","1~2개월에 1회","월 2~3회","주 1회 이상"],on:true});
+  L.push({id:id(),sec:"behavior",type:"checkbox",text:"{대상}을(를) 처음 알게 된 경로를 모두 골라 주세요.",options:["인스타그램·유튜브 등 SNS","지인 추천","매장에서 직접","온라인 검색","광고","기타"],on:true});
+  L.push({id:id(),sec:"behavior",type:"choice",text:`${c.verb} 시 가장 중요하게 생각하는 요소는 무엇인가요?`,options:["품질","가격","브랜드","후기·평점","디자인","편리함","기타"],on:false});
+  L.push({id:id(),sec:"opinion",type:"paragraph",text:"{대상}에서 가장 만족스러운 점은 무엇인가요?",on:true});
+  L.push({id:id(),sec:"opinion",type:"paragraph",text:"{대상}에서 개선되었으면 하는 점은 무엇인가요?",on:true});
+  L.push({id:id(),sec:"opinion",type:"paragraph",text:"그 밖에 하고 싶은 말씀이 있다면 자유롭게 적어 주세요.",on:false});
+  L.push({id:id(),sec:"demo",type:"choice",text:"성별을 선택해 주세요.",options:["남성","여성","응답하지 않음"],on:true});
+  L.push({id:id(),sec:"demo",type:"choice",text:"연령대를 선택해 주세요.",options:["10대","20대","30대","40대","50대","60대 이상"],on:true});
+  L.push({id:id(),sec:"demo",type:"choice",text:"직업을 선택해 주세요.",options:["학생","직장인","자영업","전문직","주부","무직","기타"],on:false});
+  L.push({id:id(),sec:"demo",type:"choice",text:"거주 지역을 선택해 주세요.",options:["서울","경기·인천","강원","충청","전라","경상","제주"],on:false});
+  return L;
+}
+
+/* ---------- state ---------- */
+let cat="cosmetics",items=build(cat),cust=0;
+const store={};
+function noun(){return $("#target").value.trim()||CATS[cat].noun}
+function fill(t){
+  const n=noun();
+  return t.replace(/\{대상\}(은\(는\)|을\(를\)|이\(가\)|에|에서)?/g,(m,p)=>{
+    if(!p)return n;
+    const last=n.charCodeAt(n.length-1);
+    const bat=last>=0xAC00&&last<=0xD7A3?((last-0xAC00)%28)!==0:false;
+    const map={"은(는)":bat?"은":"는","을(를)":bat?"을":"를","이(가)":bat?"이":"가","에":"에","에서":"에서"};
+    return n+map[p];
+  });
+}
+function unfill(v){
+  const n=noun();if(!n)return v;
+  return v.split(n+"은").join(T+"은(는)").split(n+"는").join(T+"은(는)").split(n+"을").join(T+"을(를)").split(n+"를").join(T+"을(를)").split(n).join(T);
+}
+function defaults(){
+  const o=$("#org").value.trim();
+  if(!$("#title").dataset.touched)$("#title").value=`${$("#target").value.trim()||CATS[cat].label} 고객 만족도 조사`;
+  if(!$("#desc").dataset.touched)$("#desc").value=`안녕하십니까.\n${o?o+"에서 ":""}고객 여러분께 더 나은 ${CATS[cat].label==="외식·카페"?"서비스":"제품과 서비스"}를 제공하기 위해 만족도 조사를 실시하고 있습니다.\n응답 내용은 통계 목적으로만 사용되며, 개인을 식별할 수 있는 정보는 수집하지 않습니다.\n약 3~5분 정도 소요됩니다. 소중한 의견 감사합니다.`;
+}
+
+/* ---------- render editor ---------- */
+function renderCats(){
+  $("#cats").innerHTML=Object.entries(CATS).map(([k,c])=>`<button type="button" data-cat="${k}" class="${k===cat?"on":""}" aria-pressed="${k===cat}">${c.label}</button>`).join("");
+  $$("#cats button").forEach(b=>b.onclick=()=>{
+    store[cat]=items;cat=b.dataset.cat;items=store[cat]||build(cat);renderCats();defaults();render();
+  });
+}
+function render(){
+  $("#secs").innerHTML=SECS.map(s=>{
+    const list=items.filter(i=>i.sec===s.key);
+    const on=list.filter(i=>i.on).length;
+    return `<div class="sec"><div class="sec-h"><b>${s.name}</b><span class="cnt">${on} / ${list.length}개 선택</span></div>
+      ${list.map((i,idx)=>`<div class="item ${i.on?"":"off"}" data-id="${i.id}">
+        <input type="checkbox" ${i.on?"checked":""} aria-label="문항 포함" data-k="on">
+        <div class="body">
+          <div class="meta"><span class="chip">${TYPE[i.type]}</span>${i.custom?`<span class="chip c">직접 추가</span>`:""}</div>
+          <input value="${esc(fill(i.text))}" aria-label="문항 문구" data-k="text">
+          ${i.options?`<input class="opts" value="${esc(i.options.join(", "))}" aria-label="선택지(쉼표로 구분)" data-k="options">`:""}
+        </div>
+        <div class="tools">
+          <button class="icon" data-mv="-1" aria-label="위로" ${idx===0?"disabled":""}>↑</button>
+          <button class="icon" data-mv="1" aria-label="아래로" ${idx===list.length-1?"disabled":""}>↓</button>
+          ${i.custom?`<button class="icon" data-del aria-label="삭제">✕</button>`:""}
+        </div>
+      </div>`).join("")}
+      <div class="add" data-sec="${s.key}">
+        <select aria-label="추가할 문항 유형">${Object.entries(TYPE).filter(([k])=>k!=="nps").map(([k,v])=>`<option value="${k}">${v}</option>`).join("")}</select>
+        <input placeholder="직접 문항 추가" aria-label="새 문항 문구">
+        <button class="btn ghost sm" data-add>추가</button>
+      </div></div>`;
+  }).join("");
+  $$("#secs .item").forEach(row=>{
+    const it=items.find(x=>x.id===row.dataset.id);
+    row.querySelector('[data-k="on"]').onchange=e=>{it.on=e.target.checked;render()};
+    row.querySelector('[data-k="text"]').oninput=e=>{it.text=unfill(e.target.value);update()};
+    const o=row.querySelector('[data-k="options"]');
+    if(o)o.oninput=e=>{it.options=e.target.value.split(",").map(s=>s.trim()).filter(Boolean);update()};
+    row.querySelectorAll("[data-mv]").forEach(b=>b.onclick=()=>{
+      const same=items.filter(x=>x.sec===it.sec),k=same.indexOf(it),j=k+ +b.dataset.mv;
+      if(j<0||j>=same.length)return;
+      const a=items.indexOf(it),c=items.indexOf(same[j]);[items[a],items[c]]=[items[c],items[a]];render();
+    });
+    const d=row.querySelector("[data-del]");if(d)d.onclick=()=>{items=items.filter(x=>x!==it);render()};
+  });
+  $$("#secs .add").forEach(box=>{
+    const go=()=>{
+      const t=box.querySelector("input").value.trim();if(!t)return;
+      const type=box.querySelector("select").value;
+      const it={id:"c"+(++cust),sec:box.dataset.sec,type,text:unfill(t),on:true,custom:true};
+      if(type==="choice"||type==="checkbox")it.options=["선택지 1","선택지 2","기타"];
+      const last=items.map(x=>x.sec).lastIndexOf(box.dataset.sec);
+      items.splice(last+1,0,it);render();
+    };
+    box.querySelector("[data-add]").onclick=go;
+    box.querySelector("input").onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();go()}};
+  });
+  update();
+}
+
+/* ---------- config / preview / script ---------- */
+function config(){
+  const req=$("#reqAll").checked;
+  const sections=SECS.map(s=>{
+    let list=items.filter(i=>i.sec===s.key&&i.on&&i.text.trim()).map(i=>({type:i.type,text:fill(i.text).trim(),options:i.options?i.options.slice():undefined,required:req}));
+    if(s.key==="overall"&&$("#nps").checked)list.push({type:"nps",text:fill(T+"을(를) 친구나 동료에게 추천할 가능성은 얼마나 되나요?"),required:req});
+    return {title:s.name,items:list};
+  }).filter(s=>s.items.length);
+  return {title:$("#title").value.trim()||"고객 만족도 조사",description:$("#desc").value.trim(),sections};
+}
+function update(){
+  const C=config();
+  const total=C.sections.reduce((a,s)=>a+s.items.length,0);
+  const scale=C.sections.reduce((a,s)=>a+s.items.filter(i=>i.type==="scale").length,0);
+  $("#summary").innerHTML=`<span>섹션 <b>${C.sections.length}</b></span><span>전체 문항 <b>${total}</b></span><span>7점 척도 <b>${scale}</b></span><span>예상 소요 <b>${Math.max(1,Math.round(total*10/60))}분</b></span>`;
+  $("#pv").innerHTML=`<div class="pv-title"><h3>${esc(C.title)}</h3><p>${esc(C.description)}</p></div>`+
+    C.sections.map(s=>`<div class="pv-sec">${esc(s.title)}</div><div class="pv-sec-d">이어서 아래 ${s.items.length}개의 질문에 응답하여 주세요.</div>`+
+      s.items.map((q,i)=>`<div class="pv-q"><div class="t">${i+1}. ${esc(q.text)} ${q.required?'<span class="req">*</span>':""}</div>${pvBody(q)}</div>`).join("")).join("");
+  makeLink(C);
+}
+function pvBody(q){
+  if(q.type==="scale"||q.type==="nps"){
+    const [a,b,l,r]=q.type==="scale"?[1,7,"전혀 그렇지 않다","매우 그렇다"]:[0,10,"전혀 추천하지 않는다","매우 추천한다"];
+    let d="";for(let k=a;k<=b;k++)d+=`<span class="d">${k}<i></i></span>`;
+    return `<div class="scale"><span>${l}</span><span class="dots">${d}</span><span>${r}</span></div>`;
+  }
+  if(q.type==="choice"||q.type==="checkbox")return (q.options||[]).map(o=>`<div class="pv-opt"><i class="${q.type==="choice"?"r":""}"></i>${esc(o)}</div>`).join("");
+  return `<div class="pv-line" style="${q.type==="paragraph"?"width:100%":""}"></div>`;
+}
+const GAS="/**\n * 설문 응답 수집기 (사회및행동과학연구소 · 만족도 설문 빌더용)\n *\n * 처음 한 번만 설정합니다.\n *  1) 응답을 모을 구글 스프레드시트를 새로 만듭니다.\n *  2) 메뉴 [확장 프로그램 → Apps Script]를 열고, 기존 코드를 지운 뒤 이 코드를 붙여 넣고 저장합니다.\n *  3) 오른쪽 위 [배포 → 새 배포] → 유형 '웹 앱'\n *       - 다음 사용자 인증 정보로 실행: 나\n *       - 액세스 권한이 있는 사용자: 모든 사용자\n *     [배포]를 누르고 권한을 승인합니다.\n *  4) 나오는 '웹 앱 URL'(https://script.google.com/macros/s/.../exec)을 복사해\n *     설문 빌더의 '응답 수집 주소' 칸에 붙여 넣습니다.\n *\n * 이후 설문마다 이 시트에 탭이 하나씩 자동으로 생기고, 응답이 한 줄씩 쌓입니다.\n * 코드를 고쳤다면 [배포 → 배포 관리 → 수정 → 새 버전]으로 다시 배포해야 반영됩니다.\n */\n\nconst HEADER_COLOR = '#DAE3F3';\nconst HEADER_FONT = '#0E2A6B';\nconst MAX_CELL = 5000;\n\nfunction doPost(e) {\n  const lock = LockService.getScriptLock();\n  lock.waitLock(20000);\n  try {\n    const data = JSON.parse(e.postData.contents);\n    if (data.hp) return json_({ ok: true }); // 자동 입력 방지용 빈칸이 채워진 요청은 저장하지 않음\n    if (!data.id || !Array.isArray(data.headers) || !Array.isArray(data.answers)) {\n      return json_({ ok: false, error: 'bad_request' });\n    }\n\n    const ss = SpreadsheetApp.getActiveSpreadsheet();\n    const sid = String(data.id).replace(/[^\\w-]/g, '');\n    // 탭 이름을 바꿔도 같은 설문으로 찾을 수 있도록 설문 ID를 탭에 숨겨 둡니다\n    let sh = findTab_(ss, 'surveyId', sid);\n    const name = uniqueName_(ss, shortName_(sid, data.title));\n    const headers = ['응답 시각'].concat(data.headers.map(clean_));\n\n    if (!sh) {\n      sh = ss.insertSheet(name);\n      sh.addDeveloperMetadata('surveyId', sid);\n      sh.getRange(1, 1, 1, headers.length).setValues([headers])\n        .setFontWeight('bold').setBackground(HEADER_COLOR).setFontColor(HEADER_FONT).setWrap(true);\n      sh.setFrozenRows(1);\n      sh.setColumnWidth(1, 150);\n      // 연구용 설문: 헤더는 변수명, 문항 원문은 메모로 달고 코드북 탭을 따로 만듭니다\n      if (Array.isArray(data.notes) && data.notes.length === data.headers.length) {\n        sh.getRange(1, 2, 1, data.notes.length).setNotes([data.notes.map(clean_)]);\n      }\n      if (Array.isArray(data.codebook) && data.codebook.length) {\n        let cb = findTab_(ss, 'surveyCodebook', sid);\n        if (!cb) {\n          cb = ss.insertSheet(uniqueName_(ss, name + ' 코드북'));\n          cb.addDeveloperMetadata('surveyCodebook', sid);\n        }\n        const cbHead = ['변수명', '섹션', '문항', '구성개념', '역문항', '비고', '응답 형식'];\n        const cbRows = data.codebook.map(function (r) {\n          const row = cbHead.map(function (_, i) { return clean_(r[i]); });\n          return row;\n        });\n        cb.clear();\n        cb.getRange(1, 1, 1, cbHead.length).setValues([cbHead])\n          .setFontWeight('bold').setBackground(HEADER_COLOR).setFontColor(HEADER_FONT);\n        cb.getRange(2, 1, cbRows.length, cbHead.length).setValues(cbRows);\n        cb.setFrozenRows(1);\n        cb.setColumnWidth(3, 420);\n      }\n      // 비어 있는 기본 탭(시트1)은 정리\n      ss.getSheets().forEach(function (s) {\n        if (s.getSheetId() !== sh.getSheetId() && s.getLastRow() === 0 && !s.getFormUrl() && ss.getSheets().length > 1) ss.deleteSheet(s);\n      });\n    }\n\n    const row = [new Date()].concat(data.answers.map(function (v) {\n      if (Array.isArray(v)) v = v.join(', ');\n      if (typeof v === 'number') return v;\n      return clean_(v);\n    }));\n    sh.appendRow(row);\n    return json_({ ok: true });\n  } catch (err) {\n    return json_({ ok: false, error: String(err) });\n  } finally {\n    lock.releaseLock();\n  }\n}\n\nfunction doGet() {\n  return json_({ ok: true, service: 'survey-collector' });\n}\n\n// 기본 탭 이름: 제목 앞부분 12자 + 설문 ID 끝 4자리 (시트에서 자유롭게 바꿔도 됩니다)\nfunction shortName_(sid, title) {\n  let t = String(title || '설문').replace(/[\\[\\]\\*\\?\\/\\\\:]/g, ' ').replace(/\\s+/g, ' ').trim();\n  t = t.replace(/(에 관한|에 대한)?\\s*(설문 조사|설문조사|설문|조사)$/, '').trim() || '설문';\n  if (t.length > 12) t = t.slice(0, 12).trim() + '…';\n  return t + ' ' + sid.slice(-4);\n}\n\nfunction uniqueName_(ss, base) {\n  let n = base, i = 2;\n  while (ss.getSheetByName(n)) n = base + ' (' + (i++) + ')';\n  return n;\n}\n\nfunction findTab_(ss, key, value) {\n  const found = ss.createDeveloperMetadataFinder().withKey(key).withValue(value).find();\n  for (let i = 0; i < found.length; i++) {\n    const sh = found[i].getLocation().getSheet();\n    if (sh) return sh;\n  }\n  return null;\n}\n\n// 수식으로 해석되지 않게 막고 길이를 제한\nfunction clean_(v) {\n  let s = String(v == null ? '' : v).slice(0, MAX_CELL);\n  if (/^[=+\\-@]/.test(s)) s = \"'\" + s;\n  return s;\n}\n\nfunction json_(o) {\n  return ContentService.createTextOutput(JSON.stringify(o)).setMimeType(ContentService.MimeType.JSON);\n}\n";
+const BASE_DEFAULT="https://sabsci-lab.com/survey";
+function b64url(u8){let b="";for(let i=0;i<u8.length;i++)b+=String.fromCharCode(u8[i]);return btoa(b).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"")}
+async function encode(obj){
+  const json=JSON.stringify(obj);
+  if(typeof CompressionStream==="function"){
+    const cs=new CompressionStream("deflate-raw");
+    const buf=await new Response(new Blob([json]).stream().pipeThrough(cs)).arrayBuffer();
+    return "z"+b64url(new Uint8Array(buf));
+  }
+  return "j"+b64url(new TextEncoder().encode(json));
+}
+function hash6(str){let h=2166136261;for(let i=0;i<str.length;i++){h^=str.charCodeAt(i);h=Math.imul(h,16777619)}return (h>>>0).toString(36).slice(0,6).padStart(6,"0")}
+function payload(C){
+  const body={t:C.title,d:C.description,o:$("#org").value.trim(),
+    s:C.sections.map(sec=>({t:sec.title,q:sec.items.map(q=>{const o={y:q.type,x:q.text};if(q.options)o.o=q.options;if(q.required)o.r=1;return o})}))};
+  const now=new Date(),ymd=String(now.getFullYear()).slice(2)+String(now.getMonth()+1).padStart(2,"0")+String(now.getDate()).padStart(2,"0");
+  body.id=ymd+"-"+hash6(JSON.stringify(body));
+  const ep=$("#endpoint").value.trim();if(ep)body.e=ep;
+  return body;
+}
+const mem={get(k){try{return localStorage.getItem(k)||""}catch(e){return ""}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+let linkSeq=0,qrTimer=null;
+async function makeLink(C){
+  const seq=++linkSeq;
+  const ep=$("#endpoint").value.trim();
+  const okEp=/^https:\/\/script\.google\.com\/macros\/s\/[^/]+\/exec$/.test(ep);
+  $("#epStatus").textContent=!ep?"응답 수집 주소가 비어 있습니다. 아래 ‘처음 한 번만’ 안내대로 연결해 주세요.":okEp?"응답이 연결된 구글 시트로 모입니다.":"주소 형식을 확인해 주세요. https://script.google.com/macros/s/…/exec 형태여야 합니다.";
+  $("#epStatus").className="status"+(okEp?"":" err");
+  if(!ep&&!$("#setup").open)$("#setup").open=true;
+  const P=payload(C);
+  const h=await encode(P);
+  if(seq!==linkSeq)return;
+  const base=($("#base").value.trim()||BASE_DEFAULT).replace(/#.*$/,"");
+  const url=base+"#"+h;
+  $("#link").value=url;$("#openLink").href=url;
+  $("#linkStatus").textContent=`설문 ID ${P.id} · 링크 ${url.length.toLocaleString()}자`;
+  clearTimeout(qrTimer);qrTimer=setTimeout(()=>drawQR(url),250);
+}
+function drawQR(url){
+  const box=$("#qr");box.innerHTML="";
+  if(typeof QRCode!=="function"){box.style.display="none";return}
+  box.style.display="";
+  try{new QRCode(box,{text:url,width:220,height:220,colorDark:"#0e2a6b",colorLight:"#ffffff",correctLevel:QRCode.CorrectLevel.L})}
+  catch(e){box.style.display="none";$("#qrNote").textContent="문항이 많아 링크가 QR 한 개에 담기지 않습니다. 링크를 짧게 줄이는 서비스(예: 네이버 me2.do)로 줄인 뒤 QR을 만들어 주세요."}
+}
+
+/* ---------- wiring ---------- */
+["#title","#desc"].forEach(s=>$(s).addEventListener("input",()=>{$(s).dataset.touched=1;update()}));
+$("#target").addEventListener("input",()=>{defaults();render()});
+$("#org").addEventListener("input",()=>{defaults();update()});
+["#reqAll","#nps"].forEach(s=>$(s).onchange=update);
+$("#code").textContent=GAS;
+$("#endpoint").value=mem.get("svb_endpoint")||"https://script.google.com/macros/s/AKfycbwHLcYk15dyBXeeLEnEEpRsL7YkopAPLkYKfLNn-JXHk2vuBJ8MTlpL544NSbZxnwc1FA/exec";$("#base").value=mem.get("svb_base")||BASE_DEFAULT;
+$("#endpoint").addEventListener("input",()=>{mem.set("svb_endpoint",$("#endpoint").value.trim());update()});
+$("#base").addEventListener("input",()=>{mem.set("svb_base",$("#base").value.trim());update()});
+$("#copyLink").onclick=async()=>{
+  try{await navigator.clipboard.writeText($("#link").value);$("#linkStatus").textContent="링크를 복사했습니다."}
+  catch(e){$("#link").select();$("#linkStatus").textContent="자동 복사가 막혀 링크를 선택해 두었습니다. Ctrl+C(⌘+C)로 복사하세요."}
+};
+$("#allOn").onclick=()=>{items.forEach(i=>i.on=true);render()};
+$("#reset").onclick=()=>{items=build(cat);render()};
+$$(".tabs button").forEach(b=>b.onclick=()=>{
+  $$(".tabs button").forEach(x=>x.classList.toggle("on",x===b));
+  $("#pane-pv").hidden=b.dataset.tab!=="pv";$("#pane-sc").hidden=b.dataset.tab!=="sc";
+});
+$("#copy").onclick=async()=>{
+  try{await navigator.clipboard.writeText($("#code").textContent);$("#copyStatus").textContent="복사했습니다. 시트의 Apps Script 편집기에 붙여 넣으세요."}
+  catch(e){
+    const r=document.createRange();r.selectNodeContents($("#code"));const s=getSelection();s.removeAllRanges();s.addRange(r);
+    $("#copyStatus").textContent="자동 복사가 막혀 코드를 선택해 두었습니다. Ctrl+C(⌘+C)로 복사하세요.";
+  }
+};
+renderCats();defaults();render();
+})();
+</script>
+</body>
+</html>

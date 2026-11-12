@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>연구 설문 빌더</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+/* Layout: 왼쪽 연구정보 → 척도 라이브러리 → 설문 구성, 오른쪽 고정 패널(미리보기·코드북·링크). KCA 남색·연청, 변수명은 고정폭 */
+:root{
+  --ink:#17213a;--muted:#5b6580;--bg:#f5f7fb;--surface:#fff;--line:#dde3ef;
+  --navy:#0e2a6b;--soft:#dae3f3;--teal:#17414f;--red:#c00000;--on:#fff;
+  --font:"Noto Sans KR",system-ui,-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --ink:#e7ebf5;--muted:#a2abc2;--bg:#0f1424;--surface:#171e33;--line:#2a3452;--navy:#8fb0ff;--soft:#1f2a48;--teal:#9fd0dc;--red:#ff7b7b;--on:#0f1424;color-scheme:dark}}
+:root[data-theme="dark"]{--ink:#e7ebf5;--muted:#a2abc2;--bg:#0f1424;--surface:#171e33;--line:#2a3452;--navy:#8fb0ff;--soft:#1f2a48;--teal:#9fd0dc;--red:#ff7b7b;--on:#0f1424;color-scheme:dark}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--font);font-size:14.5px;line-height:1.55}
+header{background:var(--surface);border-bottom:1px solid var(--line)}
+.wrap{max-width:1280px;margin:0 auto;padding:0 20px}
+.top{display:flex;align-items:center;gap:12px;padding:16px 0}
+.mark{width:10px;height:36px;background:var(--navy);border-radius:2px}
+.top h1{font-size:19px;font-weight:900;margin:0;color:var(--navy)}
+.top p{margin:0;color:var(--muted);font-size:13px}
+.layout{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:20px;padding:20px 0 60px;align-items:start}
+@media (max-width:960px){.layout{grid-template-columns:1fr}}
+.side{position:sticky;top:12px;display:flex;flex-direction:column;gap:12px;max-height:calc(100vh - 24px)}
+@media (max-width:960px){.side{position:static;max-height:none}}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px}
+.stack{display:flex;flex-direction:column;gap:14px}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+h2{font-size:15px;margin:0;color:var(--navy);display:flex;align-items:center;gap:8px}
+h2 .no{font-size:12px;font-weight:900;background:var(--navy);color:var(--on);border-radius:4px;padding:1px 7px;font-variant-numeric:tabular-nums}
+label{display:block;font-size:12.5px;font-weight:700;margin-bottom:3px}
+.hint{font-weight:400;color:var(--muted);font-size:12px}
+input,select,textarea{width:100%;font:inherit;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:7px;padding:7px 10px}
+textarea{resize:vertical;min-height:60px}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--navy);outline-offset:0}
+input[type=checkbox]{width:16px;height:16px;padding:0;accent-color:var(--navy)}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+@media (max-width:620px){.g2,.g3{grid-template-columns:1fr}}
+.btn{font:inherit;font-weight:700;cursor:pointer;border-radius:8px;padding:8px 14px;border:1px solid var(--navy);background:var(--navy);color:var(--on);text-decoration:none;display:inline-block}
+.btn.ghost{background:transparent;color:var(--navy)}
+.btn.sm{padding:4px 10px;font-size:12.5px}
+.btn:disabled{opacity:.45;cursor:default}
+.btn:focus-visible,.tabs button:focus-visible,.dom button:focus-visible{outline:2px solid var(--red);outline-offset:2px}
+.toggle{display:flex;gap:8px;align-items:center;font-size:13px;font-weight:500;margin:0}
+.dom{display:flex;gap:6px;flex-wrap:wrap}
+.dom button{all:unset;cursor:pointer;padding:6px 12px;border:1px solid var(--line);border-radius:999px;font-size:13px;font-weight:700;background:var(--bg)}
+.dom button.on{background:var(--navy);border-color:var(--navy);color:var(--on)}
+.lib{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+@media (max-width:620px){.lib{grid-template-columns:1fr}}
+.con{border:1px solid var(--line);border-radius:8px;padding:10px 12px;display:flex;flex-direction:column;gap:4px;background:var(--surface)}
+.con .h{display:flex;justify-content:space-between;align-items:center;gap:6px}
+.con b{font-size:14px}
+.code{font-family:var(--mono);font-size:12px;font-weight:700;color:var(--navy);background:var(--soft);padding:1px 6px;border-radius:4px;white-space:nowrap}
+.con .ref{font-size:12px;color:var(--muted)}
+.con details{font-size:12.5px;color:var(--muted)}
+.con details summary{cursor:pointer}
+.con ol{margin:4px 0 0;padding-left:18px}
+.sec{border:1px solid var(--line);border-radius:10px;background:var(--surface);overflow:hidden}
+.sec-h{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;padding:10px 12px;background:var(--soft)}
+.sec-h .pn{font-weight:900;color:var(--navy);font-variant-numeric:tabular-nums}
+.sec-h input{background:var(--surface)}
+.sec-b{padding:10px 12px;display:flex;flex-direction:column;gap:8px}
+.it{display:grid;grid-template-columns:78px 1fr auto auto;gap:8px;align-items:center}
+.it .c{font-family:var(--mono);font-size:12px;font-weight:700;color:var(--navy);text-align:center;padding:6px 4px}
+.it.att .c{color:var(--red)}
+.rev{display:flex;gap:4px;align-items:center;font-size:12px;color:var(--muted);white-space:nowrap}
+.icon{all:unset;cursor:pointer;width:26px;height:26px;display:grid;place-items:center;border-radius:6px;color:var(--muted);font-size:13px}
+.icon:hover{background:var(--soft);color:var(--navy)}
+.icon:focus-visible{outline:2px solid var(--navy)}
+.icon:disabled{opacity:.3;cursor:default}
+.sec-o{display:flex;gap:14px;flex-wrap:wrap;align-items:center;font-size:12.5px;color:var(--muted)}
+.tabs{display:flex;gap:4px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:4px}
+.tabs button{all:unset;cursor:pointer;flex:1;text-align:center;padding:8px;border-radius:7px;font-weight:700;font-size:13.5px;color:var(--muted)}
+.tabs button.on{background:var(--navy);color:var(--on)}
+.pane{overflow-y:auto;min-height:0}
+.summary{display:flex;gap:14px;flex-wrap:wrap;font-size:12.5px;color:var(--muted)}
+.summary b{color:var(--ink);font-variant-numeric:tabular-nums}
+/* preview mirrors survey page */
+.pv{display:flex;flex-direction:column;gap:10px;background:#f2f5fa;padding:12px;border-radius:10px;color:#17213a}
+.pv .c{background:#fff;border:1px solid #d9e0ec;border-radius:10px;padding:14px;font-size:13.5px}
+.pv .cover{border-top:8px solid #0e2a6b}
+.pv .org{font-size:12px;font-weight:700;color:#0e2a6b;margin:0 0 4px}
+.pv h3{margin:0 0 6px;font-size:18px;line-height:1.35}
+.pv .d{white-space:pre-wrap;color:#5b6580;margin:0}
+.pv .sb{background:#0e2a6b;color:#fff;border-radius:10px 10px 0 0;padding:9px 14px;font-weight:700;font-size:13.5px}
+.pv .sd{background:#fff;border:1px solid #d9e0ec;border-top:0;border-radius:0 0 10px 10px;padding:8px 14px;color:#5b6580;font-size:12.5px;margin-top:-10px}
+.pv .stim{background:#dae3f3;border-left:5px solid #0e2a6b;border-radius:8px;padding:10px 12px;white-space:pre-wrap}
+.pv .t{color:#17414f;font-weight:500;margin:0 0 8px}
+.pv .req{color:#c00000}
+.pv .sc{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.pv .sc span{border:1.5px solid #d9e0ec;border-radius:6px;text-align:center;font-weight:700;padding:4px 0;font-size:12px}
+.pv .ends{display:flex;justify-content:space-between;font-size:11px;color:#5b6580;margin-top:4px}
+.pv .op{border:1.5px solid #d9e0ec;border-radius:6px;padding:5px 10px;margin-bottom:4px;font-size:12.5px}
+.pv .ln{border-bottom:1px dotted #5b6580;height:18px}
+.pv .tag{font-family:var(--mono);font-size:10.5px;color:#0e2a6b;background:#dae3f3;border-radius:3px;padding:0 4px;margin-left:4px;vertical-align:1px}
+table{border-collapse:collapse;width:100%;font-size:12.5px}
+th,td{padding:6px 8px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{background:var(--navy);color:var(--on);white-space:nowrap;position:sticky;top:0}
+td.m{font-family:var(--mono);font-weight:700;color:var(--navy);white-space:nowrap}
+.scroll{overflow:auto}
+pre{margin:0;font-family:var(--mono);font-size:12px;line-height:1.5;white-space:pre;overflow:auto;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:12px;max-height:300px}
+ol.guide{margin:0;padding-left:20px;font-size:13.5px}
+ol.guide li{margin:5px 0}
+code{font-family:var(--mono);font-size:12.5px;background:var(--soft);padding:1px 5px;border-radius:4px}
+.out{color:var(--red);font-weight:700}
+.status{font-size:12.5px;color:var(--muted);min-height:1.3em}
+.status.err{color:var(--red)}
+.note{font-size:12.5px;color:var(--muted);background:var(--soft);border-radius:8px;padding:9px 12px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<header><div class="wrap top">
+  <div class="mark" aria-hidden="true"></div>
+  <div><h1>연구 설문 빌더</h1><p>척도를 골라 구성하면 동의서·변수명·코드북이 갖춰진 연구용 설문 링크가 나오고, 응답은 내 구글 시트에 쌓입니다</p></div>
+</div></header>
+
+<div class="wrap layout">
+<div class="stack">
+
+  <div class="card stack">
+    <div class="row" style="justify-content:space-between"><h2><span class="no">01</span>연구 정보 · 동의서</h2><button class="btn ghost sm" id="newStudy">새 연구로 비우기</button></div>
+    <div><label for="f_title">설문 제목</label><input id="f_title"></div>
+    <div><label for="f_purpose">연구 목적 <span class="hint">동의서에 한 문장으로 들어갑니다</span></label><input id="f_purpose"></div>
+    <div class="g3">
+      <div><label for="f_pi">연구책임자</label><input id="f_pi"></div>
+      <div><label for="f_aff">소속</label><input id="f_aff"></div>
+      <div><label for="f_mail">문의 이메일</label><input id="f_mail"></div>
+    </div>
+    <div class="g3">
+      <div><label for="f_irb">IRB 승인번호 <span class="hint">선택</span></label><input id="f_irb" placeholder="예: DKU 2026-11-001"></div>
+      <div><label for="f_min">예상 소요(분)</label><input id="f_min" inputmode="numeric"></div>
+      <div><label for="f_reward">참여 보상 <span class="hint">선택</span></label><input id="f_reward" placeholder="예: 모바일 커피 쿠폰"></div>
+    </div>
+    <div><label for="f_target">조사 대상 표현 <span class="hint">문항의 {대상} 자리에 들어갑니다. 예: 이 서비스, 이 브랜드</span></label><input id="f_target"></div>
+    <div><label for="f_desc">첫 화면 안내문</label><textarea id="f_desc" rows="4"></textarea></div>
+    <div><label for="f_consent">연구 참여 동의서 <span class="hint">위 정보로 자동 작성되며, 직접 고치면 그대로 유지됩니다</span></label><textarea id="f_consent" rows="9"></textarea></div>
+    <label class="toggle" for="f_useConsent"><input type="checkbox" id="f_useConsent" checked> 응답 전에 동의서를 보여주고 동의한 사람만 진행</label>
+  </div>
+
+  <div class="card stack">
+    <h2><span class="no">02</span>척도 라이브러리</h2>
+    <p class="hint" style="margin:-6px 0 0">구성개념을 추가하면 설문에 섹션 하나로 들어갑니다. 문항은 관련 연구를 참고해 쓴 번안 예시이므로, 원척도 문항과 번안 타당성은 논문 기준으로 확인해 주세요.</p>
+    <div class="dom" id="dom"></div>
+    <div class="lib" id="lib"></div>
+    <div class="row"><input id="customName" placeholder="직접 만들 구성개념 이름" style="flex:2;min-width:160px" aria-label="구성개념 이름"><input id="customCode" placeholder="변수명 (예: XYZ)" style="flex:1;min-width:110px;font-family:var(--mono)" aria-label="변수명 접두어"><button class="btn ghost sm" id="addCustom">빈 섹션 추가</button></div>
+  </div>
+
+  <div class="stack">
+    <div class="row" style="justify-content:space-between"><h2><span class="no">03</span>설문 구성</h2>
+      <label class="toggle" for="hideNames"><input type="checkbox" id="hideNames"> 응답자에게 구성개념 이름 숨기기 (PART 1, 2…로 표시)</label></div>
+    <div id="secs" class="stack"></div>
+    <div class="card stack">
+      <div class="row" style="justify-content:space-between"><b style="color:var(--navy)">주의 확인 문항</b>
+        <label class="toggle" for="attOn"><input type="checkbox" id="attOn" checked> 넣기</label></div>
+      <div class="g2">
+        <div><label for="attSec">넣을 섹션</label><select id="attSec"></select></div>
+        <div><label for="attText">문항</label><input id="attText" value="이 문항은 성실 응답 확인용입니다. ‘4’를 선택해 주세요."></div>
+      </div>
+      <p class="hint" style="margin:0">변수명 ATT1로 저장되고, 코드북에 정답(4)이 기록됩니다. 분석 전에 4가 아닌 응답을 걸러내세요.</p>
+    </div>
+    <div class="card stack">
+      <b style="color:var(--navy)">응답자 정보</b>
+      <div id="demo" class="g2"></div>
+    </div>
+  </div>
+</div>
+
+<aside class="side">
+  <div class="tabs" role="tablist">
+    <button class="on" data-tab="pv" role="tab">미리보기</button>
+    <button data-tab="cb" role="tab">코드북</button>
+    <button data-tab="ln" role="tab">설문 링크</button>
+  </div>
+  <div class="card summary" id="summary"></div>
+  <div class="pane" id="pane-pv"><div class="pv" id="pv"></div></div>
+  <div class="pane" id="pane-cb" hidden>
+    <div class="card stack">
+      <div class="row" style="justify-content:space-between"><span class="hint">응답 시트의 열 이름이 이 변수명으로 들어가고, 시트에 ‘코드북’ 탭도 자동으로 생깁니다.</span><button class="btn ghost sm" id="copyCb">표 복사</button></div>
+      <span class="status" id="cbStatus"></span>
+      <div class="scroll"><table id="cb"></table></div>
+    </div>
+  </div>
+  <div class="pane" id="pane-ln" hidden>
+    <div class="stack">
+      <div class="card stack">
+        <div><label for="endpoint">응답 수집 주소 <span class="hint">처음 한 번만 붙여 넣으면 이 브라우저가 기억합니다</span></label>
+          <input id="endpoint" placeholder="https://script.google.com/macros/s/…/exec"></div>
+        <div class="status" id="epStatus"></div>
+        <div><label for="link">설문 링크</label><textarea id="link" readonly rows="3" style="font-family:var(--mono);font-size:12px"></textarea></div>
+        <div class="row"><button class="btn" id="copyLink">링크 복사</button><a class="btn ghost" id="openLink" href="#" target="_blank" rel="noopener">새 창에서 열어 보기</a><span class="status" id="linkStatus"></span></div>
+        <div class="row" style="align-items:flex-start;gap:14px">
+          <div id="qr" style="background:#fff;padding:10px;border-radius:8px;border:1px solid var(--line);line-height:0"></div>
+          <p class="hint" id="qrNote" style="flex:1;min-width:160px;margin:0">QR은 오른쪽 클릭(휴대폰은 길게 누르기)으로 저장합니다. 문항을 바꾸면 새 링크가 생기고, 응답은 시트의 새 탭에 따로 모입니다. 배포를 시작한 뒤에는 문항을 바꾸지 마세요.</p>
+        </div>
+      </div>
+      <details class="card" id="setup">
+        <summary style="cursor:pointer;font-weight:700;color:var(--navy)">처음 한 번만: 응답 시트 연결하기</summary>
+        <ol class="guide" style="margin-top:10px">
+          <li>응답을 모을 <a href="https://sheets.new" target="_blank" rel="noopener">구글 스프레드시트를 새로 만듭니다</a>. 소비자용 빌더와 같은 시트를 써도 됩니다.</li>
+          <li>시트 메뉴 <b>확장 프로그램 → Apps Script</b>에 아래 코드를 붙여 넣고 저장합니다.</li>
+          <li><b>배포 → 새 배포 → 웹 앱</b>, <b>실행: 나</b>, <b>액세스: 모든 사용자</b>로 배포하고 권한을 허용합니다.</li>
+          <li>나온 <span class="out">웹 앱 URL</span>을 위 ‘응답 수집 주소’에 붙여 넣습니다.</li>
+          <li>홈페이지 저장소(sabsci-lab)에 <code>survey.html</code>을 한 번 올립니다.</li>
+        </ol>
+        <div class="row" style="margin:6px 0 8px"><button class="btn sm" id="copy">코드 복사</button><span class="status" id="copyStatus"></span></div>
+        <pre id="code" tabindex="0" aria-label="응답 수집 Apps Script 코드"></pre>
+        <div style="margin-top:10px"><label for="base">설문 페이지 주소</label><input id="base"></div>
+      </details>
+    </div>
+  </div>
+</aside>
+</div>
+
+<script>
+(function(){
+const $=s=>document.querySelector(s),$$=s=>Array.from(document.querySelectorAll(s));
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const GAS="/**\n * 설문 응답 수집기 (사회및행동과학연구소 · 만족도 설문 빌더용)\n *\n * 처음 한 번만 설정합니다.\n *  1) 응답을 모을 구글 스프레드시트를 새로 만듭니다.\n *  2) 메뉴 [확장 프로그램 → Apps Script]를 열고, 기존 코드를 지운 뒤 이 코드를 붙여 넣고 저장합니다.\n *  3) 오른쪽 위 [배포 → 새 배포] → 유형 '웹 앱'\n *       - 다음 사용자 인증 정보로 실행: 나\n *       - 액세스 권한이 있는 사용자: 모든 사용자\n *     [배포]를 누르고 권한을 승인합니다.\n *  4) 나오는 '웹 앱 URL'(https://script.google.com/macros/s/.../exec)을 복사해\n *     설문 빌더의 '응답 수집 주소' 칸에 붙여 넣습니다.\n *\n * 이후 설문마다 이 시트에 탭이 하나씩 자동으로 생기고, 응답이 한 줄씩 쌓입니다.\n * 코드를 고쳤다면 [배포 → 배포 관리 → 수정 → 새 버전]으로 다시 배포해야 반영됩니다.\n */\n\nconst HEADER_COLOR = '#DAE3F3';\nconst HEADER_FONT = '#0E2A6B';\nconst MAX_CELL = 5000;\n\nfunction doPost(e) {\n  const lock = LockService.getScriptLock();\n  lock.waitLock(20000);\n  try {\n    const data = JSON.parse(e.postData.contents);\n    if (data.hp) return json_({ ok: true }); // 자동 입력 방지용 빈칸이 채워진 요청은 저장하지 않음\n    if (!data.id || !Array.isArray(data.headers) || !Array.isArray(data.answers)) {\n      return json_({ ok: false, error: 'bad_request' });\n    }\n\n    const ss = SpreadsheetApp.getActiveSpreadsheet();\n    const sid = String(data.id).replace(/[^\\w-]/g, '');\n    // 탭 이름을 바꿔도 같은 설문으로 찾을 수 있도록 설문 ID를 탭에 숨겨 둡니다\n    let sh = findTab_(ss, 'surveyId', sid);\n    const name = uniqueName_(ss, shortName_(sid, data.title));\n    const headers = ['응답 시각'].concat(data.headers.map(clean_));\n\n    if (!sh) {\n      sh = ss.insertSheet(name);\n      sh.addDeveloperMetadata('surveyId', sid);\n      sh.getRange(1, 1, 1, headers.length).setValues([headers])\n        .setFontWeight('bold').setBackground(HEADER_COLOR).setFontColor(HEADER_FONT).setWrap(true);\n      sh.setFrozenRows(1);\n      sh.setColumnWidth(1, 150);\n      // 연구용 설문: 헤더는 변수명, 문항 원문은 메모로 달고 코드북 탭을 따로 만듭니다\n      if (Array.isArray(data.notes) && data.notes.length === data.headers.length) {\n        sh.getRange(1, 2, 1, data.notes.length).setNotes([data.notes.map(clean_)]);\n      }\n      if (Array.isArray(data.codebook) && data.codebook.length) {\n        let cb = findTab_(ss, 'surveyCodebook', sid);\n        if (!cb) {\n          cb = ss.insertSheet(uniqueName_(ss, name + ' 코드북'));\n          cb.addDeveloperMetadata('surveyCodebook', sid);\n        }\n        const cbHead = ['변수명', '섹션', '문항', '구성개념', '역문항', '비고', '응답 형식'];\n        const cbRows = data.codebook.map(function (r) {\n          const row = cbHead.map(function (_, i) { return clean_(r[i]); });\n          return row;\n        });\n        cb.clear();\n        cb.getRange(1, 1, 1, cbHead.length).setValues([cbHead])\n          .setFontWeight('bold').setBackground(HEADER_COLOR).setFontColor(HEADER_FONT);\n        cb.getRange(2, 1, cbRows.length, cbHead.length).setValues(cbRows);\n        cb.setFrozenRows(1);\n        cb.setColumnWidth(3, 420);\n      }\n      // 비어 있는 기본 탭(시트1)은 정리\n      ss.getSheets().forEach(function (s) {\n        if (s.getSheetId() !== sh.getSheetId() && s.getLastRow() === 0 && !s.getFormUrl() && ss.getSheets().length > 1) ss.deleteSheet(s);\n      });\n    }\n\n    const row = [new Date()].concat(data.answers.map(function (v) {\n      if (Array.isArray(v)) v = v.join(', ');\n      if (typeof v === 'number') return v;\n      return clean_(v);\n    }));\n    sh.appendRow(row);\n    return json_({ ok: true });\n  } catch (err) {\n    return json_({ ok: false, error: String(err) });\n  } finally {\n    lock.releaseLock();\n  }\n}\n\nfunction doGet() {\n  return json_({ ok: true, service: 'survey-collector' });\n}\n\n// 기본 탭 이름: 제목 앞부분 12자 + 설문 ID 끝 4자리 (시트에서 자유롭게 바꿔도 됩니다)\nfunction shortName_(sid, title) {\n  let t = String(title || '설문').replace(/[\\[\\]\\*\\?\\/\\\\:]/g, ' ').replace(/\\s+/g, ' ').trim();\n  t = t.replace(/(에 관한|에 대한)?\\s*(설문 조사|설문조사|설문|조사)$/, '').trim() || '설문';\n  if (t.length > 12) t = t.slice(0, 12).trim() + '…';\n  return t + ' ' + sid.slice(-4);\n}\n\nfunction uniqueName_(ss, base) {\n  let n = base, i = 2;\n  while (ss.getSheetByName(n)) n = base + ' (' + (i++) + ')';\n  return n;\n}\n\nfunction findTab_(ss, key, value) {\n  const found = ss.createDeveloperMetadataFinder().withKey(key).withValue(value).find();\n  for (let i = 0; i < found.length; i++) {\n    const sh = found[i].getLocation().getSheet();\n    if (sh) return sh;\n  }\n  return null;\n}\n\n// 수식으로 해석되지 않게 막고 길이를 제한\nfunction clean_(v) {\n  let s = String(v == null ? '' : v).slice(0, MAX_CELL);\n  if (/^[=+\\-@]/.test(s)) s = \"'\" + s;\n  return s;\n}\n\nfunction json_(o) {\n  return ContentService.createTextOutput(JSON.stringify(o)).setMimeType(ContentService.MimeType.JSON);\n}\n";
+const BASE_DEFAULT="https://sabsci-lab.com/survey";
+const mem={get(k){try{return localStorage.getItem(k)||""}catch(e){return ""}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+
+/* ---------- scale library (번안 예시) ---------- */
+const DOMAINS=[
+ {k:"cons",n:"소비자 행동",c:[
+  {code:"SAT",n:"고객만족",ref:"Oliver(1980) 등",items:["전반적으로 {대상}에 만족한다.","{대상}을(를) 선택한 것은 현명한 결정이었다.","{대상}은(는) 나의 기대를 충족시켰다.","{대상}을(를) 이용한 경험은 즐거웠다."]},
+  {code:"PI",n:"구매의도",ref:"Dodds, Monroe & Grewal(1991) 등",items:["나는 {대상}을(를) 구매할 의향이 있다.","가까운 시일 안에 {대상}을(를) 구매할 가능성이 높다.","{대상}의 구매를 긍정적으로 고려하겠다."]},
+  {code:"RPI",n:"재구매의도",ref:"Hellier et al.(2003) 등",items:["앞으로도 {대상}을(를) 다시 이용할 것이다.","비슷한 것이 필요하면 {대상}을(를) 우선 고려할 것이다.","{대상}을(를) 계속 이용할 의향이 있다."]},
+  {code:"WOM",n:"구전·추천의도",ref:"Zeithaml, Berry & Parasuraman(1996) 등",items:["다른 사람에게 {대상}에 대해 긍정적으로 이야기할 것이다.","누군가 조언을 구하면 {대상}을(를) 추천할 것이다.","주변 사람들에게 {대상}을(를) 이용해 보라고 권할 것이다."]},
+  {code:"TRU",n:"신뢰",ref:"Morgan & Hunt(1994) 등",items:["{대상}은(는) 믿을 수 있다.","{대상}은(는) 약속한 것을 지킨다.","{대상}은(는) 정직하다.","{대상}은(는) 소비자의 이익을 고려한다."]},
+  {code:"PV",n:"지각된 가치",ref:"Sweeney & Soutar(2001) 등",items:["{대상}은(는) 가격에 비해 가치가 있다.","{대상}은(는) 지불한 비용만큼의 효용을 준다.","{대상}은(는) 경제적인 선택이다."]},
+  {code:"PR",n:"지각된 위험",ref:"Jacoby & Kaplan(1972) 등",items:["{대상}을(를) 구매하는 것은 위험하다고 느낀다.","{대상}이(가) 기대만큼의 성능을 내지 못할까 걱정된다.","{대상}을(를) 구매하면 돈을 낭비할 수도 있다."]},
+  {code:"PBC",n:"지각된 통제감",ref:"Ajzen(1991) 등",items:["나는 {대상}의 이용 과정을 스스로 조절할 수 있다.","{대상}을(를) 이용할 때 원하는 대로 선택할 수 있다.","{대상}의 이용 여부는 전적으로 나에게 달려 있다."]},
+  {code:"PO",n:"심리적 소유감",ref:"Van Dyne & Pierce(2004); Peck & Shu(2009) 등",items:["{대상}이(가) 나의 것처럼 느껴진다.","{대상}에 대해 개인적인 소유감을 느낀다.","{대상}은(는) 나와 밀접하게 연결되어 있다고 느낀다."]}
+ ]},
+ {k:"brand",n:"브랜드",c:[
+  {code:"BA",n:"브랜드 태도",ref:"Mitchell & Olson(1981) 등",items:["나는 {대상}에 호감을 느낀다.","{대상}은(는) 좋은 브랜드이다.","{대상}에 대해 긍정적인 인상을 가지고 있다."]},
+  {code:"BL",n:"브랜드 충성도",ref:"Chaudhuri & Holbrook(2001) 등",items:["다음에도 {대상}을(를) 구매할 것이다.","나는 {대상}에 애착을 느낀다.","다른 브랜드보다 {대상}을(를) 우선 선택한다."]},
+  {code:"BAW",n:"브랜드 인지도",ref:"Yoo, Donthu & Lee(2000) 등",items:["나는 {대상}을(를) 잘 알고 있다.","여러 브랜드 중에서 {대상}을(를) 쉽게 알아볼 수 있다.","{대상}의 특징이 금방 떠오른다."]},
+  {code:"BAU",n:"브랜드 진정성",ref:"Morhart et al.(2015) 등",items:["{대상}은(는) 자신의 정체성을 꾸준히 지키고 있다.","{대상}은(는) 진심으로 소비자를 대한다.","{대상}은(는) 겉모습보다 실속을 중시한다."]}
+ ]},
+ {k:"career",n:"취업·진로",c:[
+  {code:"JSB",n:"구직행동",ref:"Blau(1994) 등",items:["채용 공고와 직업 정보를 찾아본다.","관심 있는 직업이나 기업에 대한 정보를 수집한다.","이력서나 자기소개서를 작성·수정하고 있다.","실제 채용에 지원하거나 면접을 준비한다."]},
+  {code:"CDSE",n:"진로결정 자기효능감",ref:"Betz & Taylor 계열 연구 참고",items:["나는 나에게 맞는 직업을 스스로 선택할 수 있다.","관심 직업에 대한 정보를 찾을 수 있다.","진로 목표를 세우고 계획을 실행할 수 있다.","진로 문제가 생겨도 해결 방법을 찾을 수 있다."]},
+  {code:"CA",n:"진로불안",ref:"진로불안 관련 연구 참고",items:["나의 진로를 생각하면 불안하다.","원하는 곳에 취업하지 못할까 걱정된다.","진로 결정이 늦어지는 것이 초조하다."]},
+  {code:"PSAT",n:"프로그램 만족도",ref:"교육·프로그램 평가 연구 참고",items:["이 프로그램에 전반적으로 만족한다.","프로그램 내용이 나에게 도움이 되었다.","프로그램 운영(일정·방식)이 적절했다.","다른 학생에게 이 프로그램을 추천하겠다."]}
+ ]},
+ {k:"startup",n:"창업",c:[
+  {code:"EI",n:"창업의도",ref:"Liñán & Chen(2009) 등",items:["나는 창업할 준비가 되어 있다.","언젠가 내 사업을 시작할 것이다.","창업을 진지하게 고려하고 있다.","창업을 위해 필요한 노력을 할 생각이다."]},
+  {code:"ESE",n:"창업 자기효능감",ref:"Chen, Greene & Crick(1998) 등",items:["나는 새로운 사업 기회를 찾아낼 수 있다.","사업 계획을 세우고 실행할 수 있다.","필요한 자원(자금·인력)을 확보할 수 있다.","사업 운영에서 생기는 문제를 해결할 수 있다."]},
+  {code:"OR",n:"창업기회 인식",ref:"Ozgen & Baron(2007) 등",items:["나는 시장에서 새로운 사업 기회를 잘 발견한다.","일상에서 사업 아이디어를 자주 떠올린다.","고객의 불편에서 사업 기회를 찾을 수 있다."]},
+  {code:"FB",n:"실패부담감",ref:"Cacciotti et al.(2016) 등",items:["사업에 실패할까 봐 두렵다.","창업 실패는 내 삶에 큰 부담이 될 것 같다.","실패하면 주변의 시선이 걱정된다."]},
+  {code:"ESAT",n:"창업교육 만족도",ref:"교육 만족도 연구 참고",items:["이 교육에 전반적으로 만족한다.","교육 내용이 창업 준비에 실질적으로 도움이 되었다.","강사의 전문성이 높았다.","교육에서 배운 것을 실제로 활용할 수 있다."]}
+ ]}
+];
+const ALL=DOMAINS.flatMap(d=>d.c);
+const DEMO=[
+ {c:"D_GEN",x:"성별을 선택해 주세요.",y:"choice",o:["남성","여성"],on:1},
+ {c:"D_AGE",x:"만 나이를 숫자로 적어 주세요.",y:"text",on:1},
+ {c:"D_AGEG",x:"연령대를 선택해 주세요.",y:"choice",o:["10대","20대","30대","40대","50대","60대 이상"]},
+ {c:"D_EDU",x:"최종 학력을 선택해 주세요.",y:"choice",o:["고졸 이하","전문대 재학·졸업","4년제 재학·졸업","대학원 재학·졸업"]},
+ {c:"D_JOB",x:"현재 직업을 선택해 주세요.",y:"choice",o:["학생","회사원","공무원","자영업","전문직","주부","무직","기타"]},
+ {c:"D_GRADE",x:"현재 학년을 선택해 주세요.",y:"choice",o:["1학년","2학년","3학년","4학년 이상","졸업유예·졸업"]},
+ {c:"D_MAJOR",x:"전공 계열을 선택해 주세요.",y:"choice",o:["인문","사회","경영·경제","자연","공학","예체능","의약","교육","기타"]},
+ {c:"D_INC",x:"월평균 가구 소득을 선택해 주세요.",y:"choice",o:["200만 원 미만","200~400만 원 미만","400~600만 원 미만","600~800만 원 미만","800만 원 이상"]},
+ {c:"D_REG",x:"거주 지역을 선택해 주세요.",y:"choice",o:["서울","경기·인천","강원","충청","전라","경상","제주"]},
+ {c:"D_USE",x:"{대상}을(를) 이용한 기간을 선택해 주세요.",y:"choice",o:["6개월 미만","6개월~1년","1~2년","2~3년","3년 이상"]}
+];
+
+/* ---------- state ---------- */
+let dom="cons",sid=0;
+let S={secs:[],demo:{}};
+const FIELDS=["f_title","f_purpose","f_pi","f_aff","f_mail","f_irb","f_min","f_reward","f_target"];
+function addConstruct(c){
+  if(S.secs.some(s=>s.key===c.code))return;
+  S.secs.push({id:"s"+(++sid),key:c.code,prefix:c.code,name:c.n,title:c.n,ref:c.ref,stim:"",rn:false,items:c.items.map(t=>({text:t,rev:false}))});
+}
+function example(){
+  $("#f_title").value="온라인 신선식품 배송서비스 이용 경험에 관한 설문";
+  $("#f_purpose").value="온라인 신선식품 배송서비스의 이용 경험이 고객만족과 재구매의도에 미치는 영향을 알아보기 위함입니다.";
+  $("#f_pi").value="이시내";$("#f_aff").value="단국대학교";$("#f_mail").value="snlee@dankook.ac.kr";
+  $("#f_irb").value="";$("#f_min").value="7";$("#f_reward").value="";
+  $("#f_target").value="이 배송서비스";
+  S.secs=[];["SAT","PBC","RPI"].forEach(k=>addConstruct(ALL.find(c=>c.code===k)));
+  S.demo={};DEMO.forEach(d=>S.demo[d.c]=!!d.on);S.demo.D_USE=true;
+}
+
+/* ---------- text helpers ---------- */
+function noun(){return $("#f_target").value.trim()||"이 제품"}
+function fill(t){
+  const n=noun();
+  return t.replace(/\{대상\}(은\(는\)|을\(를\)|이\(가\))?/g,(m,p)=>{
+    if(!p)return n;
+    const last=n.charCodeAt(n.length-1),bat=last>=0xAC00&&last<=0xD7A3&&((last-0xAC00)%28)!==0;
+    return n+({"은(는)":bat?"은":"는","을(를)":bat?"을":"를","이(가)":bat?"이":"가"}[p]);
+  });
+}
+function autoTexts(){
+  const v=k=>$("#"+k).value.trim();
+  if(!$("#f_desc").dataset.touched)$("#f_desc").value=`안녕하십니까.\n저는 ${v("f_aff")||"OO대학교"} ${v("f_pi")||"연구자"}입니다. 본 설문은 「${v("f_title")||"연구 제목"}」에 관한 학술 연구를 위한 것입니다.\n정답이나 오답은 없으니 평소 생각하시는 대로 솔직하게 응답해 주십시오. 응답 내용은 연구 목적으로만 사용됩니다.\n바쁘신 가운데 참여해 주셔서 감사합니다.`;
+  if(!$("#f_consent").dataset.touched)$("#f_consent").value=[
+    `1. 연구 목적: ${v("f_purpose")||"(연구 목적을 입력하세요)"}`,
+    `2. 참여 방법: 약 ${v("f_min")||"10"}분이 걸리는 온라인 설문에 응답합니다.`,
+    `3. 자발적 참여와 중단: 연구 참여는 자발적이며, 응답 중 언제든지 아무런 불이익 없이 중단할 수 있습니다.`,
+    `4. 위험과 이익: 연구 참여로 예상되는 위험은 없습니다.${v("f_reward")?` 응답을 마친 분께는 ${v("f_reward")}을(를) 드립니다.`:""}`,
+    `5. 개인정보와 비밀 보장: 응답은 익명으로 수집되어 통계적으로만 처리되며, 연구 목적 외에는 사용하지 않습니다. 수집된 자료는 연구 종료 후 관련 규정에 따라 보관·파기합니다.`,
+    `6. 문의: 연구책임자 ${v("f_pi")||"(이름)"}${v("f_aff")?`(${v("f_aff")})`:""}${v("f_mail")?`, ${v("f_mail")}`:""}`
+  ].join("\n");
+}
+
+/* ---------- library ---------- */
+function renderLib(){
+  $("#dom").innerHTML=DOMAINS.map(d=>`<button type="button" data-d="${d.k}" class="${d.k===dom?"on":""}" aria-pressed="${d.k===dom}">${d.n}</button>`).join("");
+  $$("#dom button").forEach(b=>b.onclick=()=>{dom=b.dataset.d;renderLib()});
+  const D=DOMAINS.find(d=>d.k===dom);
+  $("#lib").innerHTML=D.c.map(c=>{const used=S.secs.some(s=>s.key===c.code);return `<div class="con">
+    <div class="h"><b>${c.n} <span class="code">${c.code}</span></b><button class="btn ${used?"ghost":""} sm" data-add="${c.code}" ${used?"disabled":""}>${used?"추가됨":"추가"}</button></div>
+    <span class="ref">${esc(c.ref)} · ${c.items.length}문항</span>
+    <details><summary>문항 보기</summary><ol>${c.items.map(t=>`<li>${esc(fill(t))}</li>`).join("")}</ol></details></div>`}).join("");
+  $$("#lib [data-add]").forEach(b=>b.onclick=()=>{addConstruct(ALL.find(c=>c.code===b.dataset.add));renderAll()});
+}
+$("#addCustom").onclick=()=>{
+  const n=$("#customName").value.trim();if(!n){$("#customName").focus();return}
+  let p=($("#customCode").value.trim().toUpperCase().replace(/[^A-Z0-9_]/g,""))||("X"+(sid+1));
+  while(S.secs.some(s=>s.prefix===p))p+="_2";
+  S.secs.push({id:"s"+(++sid),key:"custom_"+sid,prefix:p,name:n,title:n,ref:"직접 작성",stim:"",rn:false,items:[{text:"",rev:false}]});
+  $("#customName").value="";$("#customCode").value="";renderAll();
+};
+
+/* ---------- sections ---------- */
+function renderSecs(){
+  const box=$("#secs");
+  if(!S.secs.length){box.innerHTML=`<div class="card hint">위 라이브러리에서 구성개념을 추가하세요.</div>`;return}
+  box.innerHTML=S.secs.map((s,si)=>`<div class="sec" data-id="${s.id}">
+    <div class="sec-h"><span class="pn">${String(si+1).padStart(2,"0")}</span>
+      <input value="${esc(s.title)}" data-k="title" aria-label="섹션 제목">
+      <span class="row" style="gap:2px"><button class="icon" data-mv="-1" ${si===0?"disabled":""} aria-label="섹션 위로">↑</button><button class="icon" data-mv="1" ${si===S.secs.length-1?"disabled":""} aria-label="섹션 아래로">↓</button><button class="icon" data-rm aria-label="섹션 삭제">✕</button></span>
+    </div>
+    <div class="sec-b">
+      <div class="sec-o"><span><span class="code">${esc(s.prefix)}</span> ${esc(s.name)} · ${esc(s.ref)}</span>
+        <label class="toggle" style="font-size:12.5px"><input type="checkbox" data-k="rn" ${s.rn?"checked":""}> 섹션 안 문항 순서 무작위</label></div>
+      <textarea data-k="stim" rows="2" placeholder="상황 제시 지문 (선택) — 예: 다음은 최근 이용한 배송서비스를 떠올리며 응답해 주세요." aria-label="상황 제시 지문">${esc(s.stim)}</textarea>
+      ${s.items.map((it,ii)=>`<div class="it" data-i="${ii}"><span class="c">${esc(s.prefix)}${ii+1}${it.rev?"_R":""}</span>
+        <input value="${esc(fill(it.text))}" data-ik="text" aria-label="문항">
+        <label class="rev"><input type="checkbox" data-ik="rev" ${it.rev?"checked":""}> 역문항</label>
+        <button class="icon" data-del aria-label="문항 삭제">✕</button></div>`).join("")}
+      <div><button class="btn ghost sm" data-addi>문항 추가</button></div>
+    </div></div>`).join("");
+  $$("#secs .sec").forEach(el=>{
+    const s=S.secs.find(x=>x.id===el.dataset.id);
+    el.querySelector('[data-k="title"]').oninput=e=>{s.title=e.target.value;update()};
+    el.querySelector('[data-k="stim"]').oninput=e=>{s.stim=e.target.value;update()};
+    el.querySelector('[data-k="rn"]').onchange=e=>{s.rn=e.target.checked;update()};
+    el.querySelectorAll("[data-mv]").forEach(b=>b.onclick=()=>{const i=S.secs.indexOf(s),j=i+ +b.dataset.mv;[S.secs[i],S.secs[j]]=[S.secs[j],S.secs[i]];renderAll()});
+    el.querySelector("[data-rm]").onclick=()=>{S.secs=S.secs.filter(x=>x!==s);renderAll()};
+    el.querySelector("[data-addi]").onclick=()=>{s.items.push({text:"",rev:false});renderAll()};
+    el.querySelectorAll(".it").forEach(r=>{
+      const it=s.items[+r.dataset.i];
+      r.querySelector('[data-ik="text"]').oninput=e=>{it.text=unfill(e.target.value);update()};
+      r.querySelector('[data-ik="rev"]').onchange=e=>{it.rev=e.target.checked;renderAll()};
+      r.querySelector("[data-del]").onclick=()=>{s.items.splice(+r.dataset.i,1);renderAll()};
+    });
+  });
+}
+function unfill(v){
+  const n=noun();if(!n)return v;
+  return v.split(n+"은").join("{대상}은(는)").split(n+"는").join("{대상}은(는)").split(n+"을").join("{대상}을(를)").split(n+"를").join("{대상}을(를)").split(n+"이").join("{대상}이(가)").split(n+"가").join("{대상}이(가)").split(n).join("{대상}");
+}
+function renderAttSel(){
+  const cur=$("#attSec").value;
+  $("#attSec").innerHTML=S.secs.map((s,i)=>`<option value="${s.id}">${i+1}. ${esc(s.title)}</option>`).join("");
+  if(cur&&S.secs.some(s=>s.id===cur))$("#attSec").value=cur;
+  else if(S.secs.length)$("#attSec").value=S.secs[Math.floor((S.secs.length-1)/2)].id;
+}
+function renderDemo(){
+  $("#demo").innerHTML=DEMO.map(d=>`<label class="toggle" for="dm_${d.c}"><input type="checkbox" id="dm_${d.c}" ${S.demo[d.c]?"checked":""}> ${esc(fill(d.x).replace(/(을|를) 선택해 주세요\.|(을|를) 숫자로 적어 주세요\./,""))} <span class="code" style="margin-left:auto">${d.c}</span></label>`).join("");
+  DEMO.forEach(d=>$("#dm_"+d.c).onchange=e=>{S.demo[d.c]=e.target.checked;update()});
+}
+
+/* ---------- build survey ---------- */
+function survey(){
+  const hide=$("#hideNames").checked;
+  const att=$("#attOn").checked?$("#attSec").value:null;
+  const secs=S.secs.map((s,si)=>{
+    const q=s.items.filter(it=>it.text.trim()).map((it,ii)=>({y:"scale",x:fill(it.text).trim(),r:1,c:`${s.prefix}${ii+1}${it.rev?"_R":""}`,k:s.name,v:it.rev?1:0}));
+    if(att===s.id){q.splice(Math.ceil(q.length/2),0,{y:"scale",x:$("#attText").value.trim(),r:1,c:"ATT1",k:"주의 확인",n:"정답: 4"})}
+    const o={t:hide?`PART ${si+1}`:(s.title||s.name),q};
+    if(s.stim.trim())o.i=s.stim.trim();
+    if(s.rn)o.rn=1;
+    return o;
+  }).filter(s=>s.q.length);
+  const demo=DEMO.filter(d=>S.demo[d.c]).map(d=>{const o={y:d.y,x:fill(d.x),r:1,c:d.c,k:"응답자 정보"};if(d.o)o.o=d.o.slice();return o});
+  if(demo.length)secs.push({t:hide?`PART ${secs.length+1}`:"응답자 정보",q:demo});
+  secs.forEach(s=>s.q.forEach(q=>{if(!q.v)delete q.v}));
+  const P={m:"r",t:$("#f_title").value.trim()||"연구 설문",d:$("#f_desc").value.trim(),o:[$("#f_aff").value.trim(),$("#f_pi").value.trim()&&("연구책임자 "+$("#f_pi").value.trim())].filter(Boolean).join(" · "),s:secs};
+  if($("#f_useConsent").checked&&$("#f_consent").value.trim())P.c=$("#f_consent").value.trim();
+  if($("#f_irb").value.trim())P.irb=$("#f_irb").value.trim();
+  return P;
+}
+
+/* ---------- preview / codebook ---------- */
+function renderPreview(P){
+  const tot=P.s.reduce((a,s)=>a+s.q.length,0);
+  const scl=P.s.reduce((a,s)=>a+s.q.filter(q=>q.y==="scale").length,0);
+  const rev=P.s.reduce((a,s)=>a+s.q.filter(q=>q.v).length,0);
+  $("#summary").innerHTML=`<span>섹션 <b>${P.s.length}</b></span><span>전체 문항 <b>${tot}</b></span><span>7점 척도 <b>${scl}</b></span><span>역문항 <b>${rev}</b></span><span>예상 소요 <b>${Math.max(1,Math.round(tot*8/60))}분</b></span>`;
+  const qh=(q,no)=>{
+    let b="";
+    if(q.y==="scale")b=`<div class="sc">${[1,2,3,4,5,6,7].map(k=>`<span>${k}</span>`).join("")}</div><div class="ends"><span>1 전혀 그렇지 않다</span><span>7 매우 그렇다</span></div>`;
+    else if(q.o)b=q.o.map(o=>`<div class="op">${esc(o)}</div>`).join("");
+    else b=`<div class="ln"></div>`;
+    return `<div class="c"><p class="t">${no}. ${esc(q.x)} <span class="req">*</span><span class="tag">${esc(q.c)}</span></p>${b}</div>`;
+  };
+  $("#pv").innerHTML=`<div class="c cover">${P.o?`<p class="org">${esc(P.o)}</p>`:""}<h3>${esc(P.t)}</h3><p class="d">${esc(P.d)}</p>${P.irb?`<p class="d" style="font-size:11.5px;margin-top:6px">IRB 승인번호 ${esc(P.irb)}</p>`:""}</div>`+
+    (P.c?`<div class="sb">연구 참여 동의서</div><div class="c" style="border-radius:0 0 10px 10px;margin-top:-10px"><p class="d" style="color:#17213a">${esc(P.c)}</p></div><div class="c"><p class="t">위 내용을 읽고 이해하였으며, 연구에 참여하는 데 동의하십니까? <span class="req">*</span></p><div class="op">네, 동의합니다.</div><div class="op">아니요, 동의하지 않습니다.</div></div>`:"")+
+    P.s.map((s,si)=>`<div class="sb">${si+1}. ${esc(s.t)}${s.rn?' <span style="font-weight:400;font-size:11.5px;opacity:.8">· 순서 무작위</span>':""}</div><div class="sd">이어서 아래 ${s.q.length}개의 질문에 응답하여 주세요.</div>${s.i?`<div class="stim">${esc(s.i)}</div>`:""}${s.q.map((q,i)=>qh(q,i+1)).join("")}`).join("");
+}
+let cbRows=[];
+function renderCodebook(P){
+  const TY={scale:"1~7점",choice:"단일선택",checkbox:"복수선택",text:"단답",paragraph:"서술"};
+  cbRows=[];
+  if(P.c)cbRows.push(["CONSENT","동의서","연구 참여 동의","","","",""]);
+  P.s.forEach((s,si)=>s.q.forEach(q=>cbRows.push([q.c,`${si+1}. ${s.t}`,q.x,q.k||"",q.v?"역문항":"",q.n||(q.o?q.o.join(" / "):""),TY[q.y]||q.y])));
+  cbRows.push(["DURATION","","응답 소요 시간(초)","","","","숫자"]);
+  $("#cb").innerHTML=`<thead><tr><th>변수명</th><th>구성개념</th><th>문항</th><th>역문항</th><th>비고</th></tr></thead><tbody>${cbRows.map(r=>`<tr><td class="m">${esc(r[0])}</td><td>${esc(r[3])}</td><td>${esc(r[2])}</td><td>${r[4]?'<b style="color:var(--red)">R</b>':""}</td><td>${esc(r[5])}</td></tr>`).join("")}</tbody>`;
+}
+$("#copyCb").onclick=async()=>{
+  const tsv=[["변수명","섹션","문항","구성개념","역문항","비고","응답 형식"],...cbRows].map(r=>r.map(c=>String(c).replace(/\t|\n/g," ")).join("\t")).join("\n");
+  try{await navigator.clipboard.writeText(tsv);$("#cbStatus").textContent="복사했습니다. 엑셀이나 구글 시트에 붙여 넣으면 표로 들어갑니다."}
+  catch(e){$("#cbStatus").textContent="자동 복사가 막혔습니다. 표를 드래그해서 복사해 주세요."}
+};
+
+/* ---------- link ---------- */
+function b64url(u8){let b="";for(let i=0;i<u8.length;i++)b+=String.fromCharCode(u8[i]);return btoa(b).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"")}
+async function encode(obj){
+  const json=JSON.stringify(obj);
+  if(typeof CompressionStream==="function"){
+    const cs=new CompressionStream("deflate-raw");
+    const buf=await new Response(new Blob([json]).stream().pipeThrough(cs)).arrayBuffer();
+    return "z"+b64url(new Uint8Array(buf));
+  }
+  return "j"+b64url(new TextEncoder().encode(json));
+}
+function hash6(str){let h=2166136261;for(let i=0;i<str.length;i++){h^=str.charCodeAt(i);h=Math.imul(h,16777619)}return (h>>>0).toString(36).slice(0,6).padStart(6,"0")}
+let seq=0,qrT=null;
+async function makeLink(P){
+  const my=++seq;
+  const ep=$("#endpoint").value.trim();
+  const ok=/^https:\/\/script\.google\.com\/macros\/s\/[^/]+\/exec$/.test(ep);
+  $("#epStatus").textContent=!ep?"응답 수집 주소가 비어 있습니다. 아래 ‘처음 한 번만’ 안내대로 연결해 주세요.":ok?"응답이 연결된 구글 시트로 모입니다.":"주소 형식을 확인해 주세요. https://script.google.com/macros/s/…/exec 형태여야 합니다.";
+  $("#epStatus").className="status"+(ok?"":" err");
+  if(!ep)$("#setup").open=true;
+  const now=new Date(),ymd=String(now.getFullYear()).slice(2)+String(now.getMonth()+1).padStart(2,"0")+String(now.getDate()).padStart(2,"0");
+  const body={...P,id:"R"+ymd+"-"+hash6(JSON.stringify(P))};
+  if(ep)body.e=ep;
+  const h=await encode(body);if(my!==seq)return;
+  const url=($("#base").value.trim()||BASE_DEFAULT).replace(/#.*$/,"")+"#"+h;
+  $("#link").value=url;$("#openLink").href=url;
+  $("#linkStatus").textContent=`설문 ID ${body.id} · 링크 ${url.length.toLocaleString()}자`;
+  clearTimeout(qrT);qrT=setTimeout(()=>{
+    const box=$("#qr");box.innerHTML="";box.style.display="";
+    if(typeof QRCode!=="function"){box.style.display="none";return}
+    try{new QRCode(box,{text:url,width:220,height:220,colorDark:"#0e2a6b",colorLight:"#ffffff",correctLevel:QRCode.CorrectLevel.L})}
+    catch(e){box.style.display="none";$("#qrNote").textContent="문항이 많아 링크가 QR 한 개에 담기지 않습니다. 링크 줄이기 서비스(예: 네이버 me2.do)로 줄인 뒤 QR을 만들어 주세요."}
+  },250);
+}
+
+/* ---------- wiring ---------- */
+function update(){const P=survey();renderPreview(P);renderCodebook(P);makeLink(P);renderAttSel()}
+function renderAll(){renderLib();renderSecs();renderDemo();renderAttSel();update()}
+FIELDS.forEach(k=>$("#"+k).addEventListener("input",()=>{autoTexts();if(k==="f_target")renderAll();else update()}));
+["f_desc","f_consent"].forEach(k=>$("#"+k).addEventListener("input",()=>{$("#"+k).dataset.touched=1;update()}));
+["#f_useConsent","#hideNames","#attOn","#attSec"].forEach(s=>$(s).addEventListener("change",update));
+$("#attText").addEventListener("input",update);
+$("#newStudy").onclick=()=>{
+  FIELDS.forEach(k=>$("#"+k).value="");
+  $("#f_pi").value="이시내";$("#f_aff").value="단국대학교";$("#f_mail").value="snlee@dankook.ac.kr";$("#f_min").value="10";
+  delete $("#f_desc").dataset.touched;delete $("#f_consent").dataset.touched;
+  S.secs=[];S.demo={D_GEN:true,D_AGE:true};autoTexts();renderAll();
+};
+$$(".tabs button").forEach(b=>b.onclick=()=>{
+  $$(".tabs button").forEach(x=>x.classList.toggle("on",x===b));
+  ["pv","cb","ln"].forEach(t=>$("#pane-"+t).hidden=b.dataset.tab!==t);
+});
+$("#code").textContent=GAS;
+$("#endpoint").value=mem.get("rsb_endpoint")||"https://script.google.com/macros/s/AKfycbwHLcYk15dyBXeeLEnEEpRsL7YkopAPLkYKfLNn-JXHk2vuBJ8MTlpL544NSbZxnwc1FA/exec";$("#base").value=mem.get("rsb_base")||BASE_DEFAULT;
+$("#endpoint").addEventListener("input",()=>{mem.set("rsb_endpoint",$("#endpoint").value.trim());update()});
+$("#base").addEventListener("input",()=>{mem.set("rsb_base",$("#base").value.trim());update()});
+$("#copyLink").onclick=async()=>{try{await navigator.clipboard.writeText($("#link").value);$("#linkStatus").textContent="링크를 복사했습니다."}catch(e){$("#link").select();$("#linkStatus").textContent="자동 복사가 막혀 링크를 선택해 두었습니다. Ctrl+C(⌘+C)로 복사하세요."}};
+$("#copy").onclick=async()=>{try{await navigator.clipboard.writeText(GAS);$("#copyStatus").textContent="복사했습니다."}catch(e){const r=document.createRange();r.selectNodeContents($("#code"));const s=getSelection();s.removeAllRanges();s.addRange(r);$("#copyStatus").textContent="코드를 선택해 두었습니다. Ctrl+C(⌘+C)로 복사하세요."}};
+
+example();autoTexts();renderAll();
+})();
+</script>
+</body>
+</html>

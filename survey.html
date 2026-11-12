@@ -60,6 +60,14 @@ footer{text-align:center;font-size:12px;color:var(--muted);margin-top:8px}
 .stim{background:var(--soft);border-left:5px solid var(--navy);border-radius:8px;padding:14px 16px;white-space:pre-wrap;font-size:15px}
 .consent{white-space:pre-wrap;font-size:14.5px;max-height:none}
 .irb{font-size:12.5px;color:var(--muted);margin-top:10px}
+.hub{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media (max-width:560px){.hub{grid-template-columns:1fr}}
+.hub a{display:flex;flex-direction:column;gap:6px;text-decoration:none;color:var(--ink);background:var(--surface);border:1.5px solid var(--line);border-radius:12px;padding:20px}
+.hub a:hover,.hub a:focus-visible{border-color:var(--navy);outline:none;box-shadow:0 0 0 3px var(--soft)}
+.hub .k{font-size:12px;font-weight:700;color:var(--navy);letter-spacing:.04em}
+.hub b{font-size:18px;color:var(--navy)}
+.hub span.d{font-size:13.5px;color:var(--muted)}
+.hub .go{margin-top:auto;font-weight:700;color:var(--navy);font-size:14px}
 .hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
@@ -93,7 +101,7 @@ const store={get(k){try{return localStorage.getItem(k)}catch(e){return null}},se
 
 async function init(){
   const h=decodeURIComponent(location.hash.slice(1));
-  if(!h){fail("설문 링크가 올바르지 않습니다. 받으신 링크 전체가 주소창에 들어갔는지 확인해 주세요.");return}
+  if(!h){hub();return}
   try{S=await decode(h)}catch(e){fail("설문 링크가 잘렸거나 손상되었습니다. 받으신 링크를 처음부터 끝까지 다시 복사해 열어 주세요.");return}
   if(!S||!Array.isArray(S.s)){fail("설문 내용을 읽지 못했습니다.");return}
   S.e=S.e||DEFAULT_ENDPOINT;
@@ -237,6 +245,16 @@ function consentPage(){
     if(v==="n"){app.innerHTML=`<div class="card cover done"><p class="big">참여해 주셔서 감사합니다</p><p class="desc">연구 참여에 동의하지 않으셔서 설문을 종료합니다. 어떤 정보도 저장되지 않았습니다.</p></div>`;footer();window.scrollTo(0,0);return}
     consented=true;page=0;render();window.scrollTo(0,0);
   };
+}
+function hub(){
+  document.title="설문 빌더 | 사회및행동과학연구소";
+  app.innerHTML=`<div class="card cover"><p class="org">(주)사회및행동과학연구소</p><h1>설문 빌더</h1><p class="desc">만들 설문의 종류를 고르세요. 완성된 설문 링크로 들어온 응답은 연결된 구글 시트에 모입니다.</p></div>
+  <div class="hub">
+    <a href="/survey-builder"><span class="k">CUSTOMER</span><b>만족도 설문 빌더</b><span class="d">제품·서비스 카테고리별 표준 문항을 골라 고객 만족도 조사를 만듭니다.</span><span class="go">열기 →</span></a>
+    <a href="/research-builder"><span class="k">RESEARCH</span><b>연구 설문 빌더</b><span class="d">척도 라이브러리, 동의서, 변수명·코드북이 갖춰진 학술 연구용 설문을 만듭니다.</span><span class="go">열기 →</span></a>
+  </div>
+  <p class="meta" style="text-align:center">설문에 응답하러 오셨다면 받으신 설문 링크 전체로 접속해 주세요.</p>`;
+  footer();
 }
 function footer(){
   const f=document.createElement("footer");f.textContent="Survey powered by (주)사회및행동과학연구소";app.appendChild(f);
