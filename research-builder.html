@@ -130,6 +130,21 @@ code{font-family:var(--mono);font-size:12.5px;background:var(--soft);padding:1px
 #logoPv{height:28px;max-width:160px;object-fit:contain;background:#fff;border:1px solid var(--line);border-radius:6px;padding:3px 6px}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 [hidden]{display:none!important}
+.simg-ed{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.simg-ed img{width:120px;max-height:120px;object-fit:contain;border:1px solid var(--line);border-radius:8px;background:#fff}
+.vwrap{position:relative;width:100%;aspect-ratio:16/9;border-radius:10px;overflow:hidden;background:#000;margin:0 0 12px}
+.vwrap iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.vlink{display:inline-block;margin:0 0 12px;padding:10px 16px;border:1px solid var(--line);border-radius:10px;background:#fff;font-weight:600;text-decoration:none;color:var(--navy)}
+.pv-img{margin:8px 0;text-align:center}
+.pv-img img{max-width:100%;max-height:420px;border-radius:8px;border:1px solid var(--line)}
+.cdadd{border:1px dashed var(--line);border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:8px;background:var(--bg)}
+.cdadd input,.cdadd select{font:inherit;font-size:14px}
+.cditem{border:1px solid var(--line);border-radius:10px;padding:10px 12px;display:flex;flex-direction:column;gap:6px;background:#fff}
+.cditem .top{display:flex;gap:8px;align-items:center}
+.cditem .top input[type=text]{flex:1;min-width:0}
+.cditem .opts{font-size:12.5px;color:var(--muted)}
+.cditem .x{border:0;background:none;color:var(--muted);font-size:18px;cursor:pointer;padding:0 4px}
+body,h1,h2,h3,p,label,legend,.t{word-break:keep-all;overflow-wrap:break-word}
 </style>
 </head>
 <body>
@@ -144,8 +159,8 @@ code{font-family:var(--mono);font-size:12.5px;background:var(--soft);padding:1px
 
   <div class="card stack">
     <div class="row" style="justify-content:space-between"><h2><span class="no">01</span>연구 정보 · 동의서</h2><button class="btn ghost sm" id="newStudy">새 연구로 비우기</button></div>
-    <div><label for="f_title">설문 제목</label><input id="f_title"></div>
-    <div><label for="f_purpose">연구 목적 <span class="hint">동의서에 한 문장으로 들어갑니다</span></label><input id="f_purpose"></div>
+    <div><label for="f_title">설문 제목</label><input id="f_title" placeholder="예: 온라인 쇼핑 이용 경험에 관한 설문"></div>
+    <div><label for="f_purpose">연구 목적 <span class="hint">동의서에 한 문장으로 들어갑니다</span></label><input id="f_purpose" placeholder="예: 서비스 품질이 고객만족과 재구매의도에 미치는 영향을 알아보기 위함입니다."></div>
     <div class="g3">
       <div><label for="f_pi">연구책임자</label><input id="f_pi"></div>
       <div><label for="f_aff">소속</label><input id="f_aff"></div>
@@ -156,7 +171,7 @@ code{font-family:var(--mono);font-size:12.5px;background:var(--soft);padding:1px
       <div><label for="f_min">예상 소요(분)</label><input id="f_min" inputmode="numeric"></div>
       <div><label for="f_reward">참여 보상 <span class="hint">선택</span></label><input id="f_reward" placeholder="예: 모바일 커피 쿠폰"></div>
     </div>
-    <div><label for="f_target">조사 대상 표현 <span class="hint">문항의 {대상} 자리에 들어갑니다. 예: 이 서비스, 이 브랜드</span></label><input id="f_target"></div>
+    <div><label for="f_target">조사 대상 표현 <span class="hint">문항의 {대상} 자리에 들어갑니다. 예: 이 서비스, 이 브랜드</span></label><input id="f_target" placeholder="비우면 ‘이 제품·서비스’"></div>
     <div><label for="f_desc">첫 화면 안내문</label><textarea id="f_desc" rows="4"></textarea></div>
     <div><label for="f_consent">연구 참여 동의서 <span class="hint">위 정보로 자동 작성되며, 직접 고치면 그대로 유지됩니다</span></label><textarea id="f_consent" rows="9"></textarea></div>
       <div class="design-box">
@@ -191,6 +206,16 @@ code{font-family:var(--mono);font-size:12.5px;background:var(--soft);padding:1px
     <div class="card stack">
       <b style="color:var(--navy)">응답자 정보</b>
       <div id="demo" class="g2"></div>
+      <div id="cdemo" class="stack" style="gap:8px"></div>
+      <div class="cdadd">
+        <b style="font-size:13.5px;color:var(--navy)">+ 응답자 정보 문항 추가</b>
+        <input id="cd_x" placeholder="문항 예: 운동 경력을 선택해 주세요." aria-label="추가할 문항">
+        <div class="row" style="gap:8px;flex-wrap:wrap">
+          <select id="cd_y" aria-label="응답 형식"><option value="choice">하나 고르기</option><option value="checkbox">여러 개 고르기</option><option value="text">직접 적기</option></select>
+          <input id="cd_o" placeholder="선택지를 쉼표로: 1년 미만, 1~3년, 3년 이상" aria-label="선택지" style="flex:1;min-width:200px">
+        </div>
+        <div class="row" style="gap:8px"><button class="btn sm" id="cd_add" type="button">문항 추가</button><span class="hint" id="cd_msg"></span></div>
+      </div>
     </div>
   </div>
 </div>
@@ -259,7 +284,7 @@ code{font-family:var(--mono);font-size:12.5px;background:var(--soft);padding:1px
 (function(){
 const $=s=>document.querySelector(s),$$=s=>Array.from(document.querySelectorAll(s));
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-const GAS="const HEADER_COLOR = '#DAE3F3';\nconst HEADER_FONT = '#0E2A6B';\nconst MAX_CELL = 5000;\nconst REG = '_설문목록';\n\nfunction doPost(e) {\n  const lock = LockService.getScriptLock();\n  lock.waitLock(20000);\n  try {\n    const data = JSON.parse(e.postData.contents);\n    if (data.hp) return json_({ ok: true });\n    if (data.action === 'register') return register_(data);\n    if (!data.id || !Array.isArray(data.headers) || !Array.isArray(data.answers)) {\n      return json_({ ok: false, error: 'bad_request' });\n    }\n\n    const ss = SpreadsheetApp.getActiveSpreadsheet();\n    const sid = String(data.id).replace(/[^\\w-]/g, '');\n    let sh = findTab_(ss, 'surveyId', sid);\n    const name = uniqueName_(ss, shortName_(sid, data.title));\n    const headers = ['응답 시각'].concat(data.headers.map(clean_));\n\n    if (!sh) {\n      sh = ss.insertSheet(name);\n      sh.addDeveloperMetadata('surveyId', sid);\n      sh.getRange(1, 1, 1, headers.length).setValues([headers])\n        .setFontWeight('bold').setBackground(HEADER_COLOR).setFontColor(HEADER_FONT).setWrap(true);\n      sh.setFrozenRows(1);\n      sh.setColumnWidth(1, 150);\n      if (Array.isArray(data.notes) && data.notes.length === data.headers.length) {\n        sh.getRange(1, 2, 1, data.notes.length).setNotes([data.notes.map(clean_)]);\n      }\n      if (Array.isArray(data.codebook) && data.codebook.length) {\n        let cb = findTab_(ss, 'surveyCodebook', sid);\n        if (!cb) {\n          cb = ss.insertSheet(uniqueName_(ss, name + ' 코드북'));\n          cb.addDeveloperMetadata('surveyCodebook', sid);\n        }\n        const cbHead = ['변수명', '섹션', '문항', '구성개념', '역문항', '비고', '응답 형식'];\n        const cbRows = data.codebook.map(function (r) {\n          const row = cbHead.map(function (_, i) { return clean_(r[i]); });\n          return row;\n        });\n        cb.clear();\n        cb.getRange(1, 1, 1, cbHead.length).setValues([cbHead])\n          .setFontWeight('bold').setBackground(HEADER_COLOR).setFontColor(HEADER_FONT);\n        cb.getRange(2, 1, cbRows.length, cbHead.length).setValues(cbRows);\n        cb.setFrozenRows(1);\n        cb.setColumnWidth(3, 420);\n      }\n      ss.getSheets().forEach(function (s) {\n        if (s.getSheetId() !== sh.getSheetId() && s.getLastRow() === 0 && !s.getFormUrl() && ss.getSheets().length > 1) ss.deleteSheet(s);\n      });\n    }\n\n    const row = [new Date()].concat(data.answers.map(function (v) {\n      if (Array.isArray(v)) v = v.join(', ');\n      if (typeof v === 'number') return v;\n      return clean_(v);\n    }));\n    sh.appendRow(row);\n    return json_({ ok: true });\n  } catch (err) {\n    return json_({ ok: false, error: String(err) });\n  } finally {\n    lock.releaseLock();\n  }\n}\n\nfunction doGet(e) {\n  if (e && e.parameter && e.parameter.admin) return admin_(e.parameter);\n  if (e && e.parameter && e.parameter.report) return report_(e.parameter.report, e.parameter.key);\n  const id = e && e.parameter && e.parameter.id;\n  if (!id) return json_({ ok: true, service: 'survey-collector' });\n  const reg = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(REG);\n  const f = reg && reg.getRange('A:A').createTextFinder(String(id).toLowerCase()).matchEntireCell(true).findNext();\n  if (!f) return json_({ ok: false, error: 'not_found' });\n  return json_({ ok: true, survey: JSON.parse(reg.getRange(f.getRow(), 2).getValue()) });\n}\n\nfunction register_(data) {\n  const slug = String(data.slug || '').toLowerCase();\n  if (!/^[a-z0-9][a-z0-9-]{2,39}$/.test(slug) || !data.survey) return json_({ ok: false, error: 'bad_slug' });\n  const json = JSON.stringify(data.survey);\n  if (json.length > 49000) return json_({ ok: false, error: 'too_long' });\n  const ss = SpreadsheetApp.getActiveSpreadsheet();\n  let reg = ss.getSheetByName(REG);\n  if (!reg) {\n    reg = ss.insertSheet(REG);\n    reg.appendRow(['짧은 이름', '설문 내용', '등록 시각']);\n    reg.hideSheet();\n  }\n  const f = reg.getRange('A:A').createTextFinder(slug).matchEntireCell(true).findNext();\n  if (f) return json_({ ok: false, error: 'taken' });\n  const state = data.bs ? JSON.stringify(data.bs) : '';\n  reg.appendRow([slug, json, new Date(), String(data.key || '').slice(0, 40), state.length < 49000 ? state : '']);\n  return json_({ ok: true });\n}\n\nfunction report_(slug, key) {\n  const ss = SpreadsheetApp.getActiveSpreadsheet();\n  const reg = ss.getSheetByName(REG);\n  const f = reg && reg.getRange('A:A').createTextFinder(String(slug).toLowerCase()).matchEntireCell(true).findNext();\n  if (!f) return json_({ ok: false, error: 'not_found' });\n  const saved = String(reg.getRange(f.getRow(), 4).getValue() || '');\n  if (!saved || saved !== String(key || '')) return json_({ ok: false, error: 'forbidden' });\n  const survey = JSON.parse(reg.getRange(f.getRow(), 2).getValue());\n  const sh = findTab_(ss, 'surveyId', String(survey.id).replace(/[^\\w-]/g, ''));\n  if (!sh || sh.getLastRow() < 1) return json_({ ok: true, survey: survey, headers: [], rows: [] });\n  const vals = sh.getDataRange().getValues();\n  const rows = vals.slice(1).map(function (r) {\n    return r.map(function (v) { return v instanceof Date ? v.toISOString() : v; });\n  });\n  return json_({ ok: true, survey: survey, headers: vals[0], rows: rows });\n}\n\n// 내 설문함: 관리자 비밀번호는 브라우저에서 해시로 바꿔 보내고, 해시만 저장합니다\nfunction admin_(p) {\n  const props = PropertiesService.getScriptProperties();\n  const saved = props.getProperty('ADMIN_HASH');\n  const h = String(p.h || '');\n  if (p.admin === 'status') return json_({ ok: true, hasPw: !!saved });\n  if (p.admin === 'setpw') {\n    if (saved) return json_({ ok: false, error: 'already_set' });\n    if (!/^[0-9a-f]{64}$/.test(h)) return json_({ ok: false, error: 'bad_hash' });\n    props.setProperty('ADMIN_HASH', h);\n    return json_({ ok: true });\n  }\n  if (!saved || h !== saved) return json_({ ok: false, error: 'forbidden' });\n  const ss = SpreadsheetApp.getActiveSpreadsheet();\n  const reg = ss.getSheetByName(REG);\n  if (!reg || reg.getLastRow() < 2) return json_({ ok: true, items: [] });\n  const vals = reg.getRange(2, 1, reg.getLastRow() - 1, Math.max(5, reg.getLastColumn())).getValues();\n  if (p.admin === 'list') {\n    const items = vals.map(function (r) {\n      let sv = {};\n      try { sv = JSON.parse(r[1]); } catch (err) {}\n      const sh = sv.id ? findTab_(ss, 'surveyId', String(sv.id).replace(/[^\\w-]/g, '')) : null;\n      return {\n        slug: r[0], title: sv.t || '', org: sv.o || '', kind: sv.m === 'r' ? 'research' : 'customer',\n        created: r[2] instanceof Date ? r[2].toISOString() : String(r[2] || ''),\n        key: String(r[3] || ''), hasState: !!r[4],\n        responses: sh ? Math.max(0, sh.getLastRow() - 1) : 0, tab: sh ? sh.getName() : '',\n        th: sv.th || ''\n      };\n    }).reverse();\n    return json_({ ok: true, items: items });\n  }\n  if (p.admin === 'state') {\n    const slug = String(p.slug || '').toLowerCase();\n    for (let i = 0; i < vals.length; i++) {\n      if (String(vals[i][0]) === slug) {\n        let sv = {}, st = null;\n        try { sv = JSON.parse(vals[i][1]); } catch (err) {}\n        try { st = vals[i][4] ? JSON.parse(vals[i][4]) : null; } catch (err) {}\n        return json_({ ok: true, survey: sv, state: st });\n      }\n    }\n    return json_({ ok: false, error: 'not_found' });\n  }\n  return json_({ ok: false, error: 'bad_request' });\n}\n\nfunction shortName_(sid, title) {\n  let t = String(title || '설문').replace(/[\\[\\]\\*\\?\\/\\\\:]/g, ' ').replace(/\\s+/g, ' ').trim();\n  t = t.replace(/(에 관한|에 대한)?\\s*(설문 조사|설문조사|설문|조사)$/, '').trim() || '설문';\n  if (t.length > 12) t = t.slice(0, 12).trim() + '…';\n  return t + ' ' + sid.slice(-4);\n}\n\nfunction uniqueName_(ss, base) {\n  let n = base, i = 2;\n  while (ss.getSheetByName(n)) n = base + ' (' + (i++) + ')';\n  return n;\n}\n\nfunction findTab_(ss, key, value) {\n  const found = ss.createDeveloperMetadataFinder().withKey(key).withValue(value).find();\n  for (let i = 0; i < found.length; i++) {\n    const sh = found[i].getLocation().getSheet();\n    if (sh) return sh;\n  }\n  return null;\n}\n\nfunction clean_(v) {\n  let s = String(v == null ? '' : v).slice(0, MAX_CELL);\n  if (/^[=+\\-@]/.test(s)) s = \"'\" + s;\n  return s;\n}\n\nfunction json_(o) {\n  return ContentService.createTextOutput(JSON.stringify(o)).setMimeType(ContentService.MimeType.JSON);\n}\n";
+const GAS="const HEADER_COLOR = '#DAE3F3';\nconst HEADER_FONT = '#0E2A6B';\nconst MAX_CELL = 5000;\nconst REG = '_설문목록';\nconst IMG = '_이미지';\n\nfunction doPost(e) {\n  const lock = LockService.getScriptLock();\n  lock.waitLock(20000);\n  try {\n    const data = JSON.parse(e.postData.contents);\n    if (data.hp) return json_({ ok: true });\n    if (data.action === 'register') return register_(data);\n    if (data.action === 'img') return saveImg_(data);\n    if (!data.id || !Array.isArray(data.headers) || !Array.isArray(data.answers)) {\n      return json_({ ok: false, error: 'bad_request' });\n    }\n\n    const ss = SpreadsheetApp.getActiveSpreadsheet();\n    const sid = String(data.id).replace(/[^\\w-]/g, '');\n    let sh = findTab_(ss, 'surveyId', sid);\n    const name = uniqueName_(ss, shortName_(sid, data.title));\n    const headers = ['응답 시각'].concat(data.headers.map(clean_));\n\n    if (!sh) {\n      sh = ss.insertSheet(name);\n      sh.addDeveloperMetadata('surveyId', sid);\n      sh.getRange(1, 1, 1, headers.length).setValues([headers])\n        .setFontWeight('bold').setBackground(HEADER_COLOR).setFontColor(HEADER_FONT).setWrap(true);\n      sh.setFrozenRows(1);\n      sh.setColumnWidth(1, 150);\n      if (Array.isArray(data.notes) && data.notes.length === data.headers.length) {\n        sh.getRange(1, 2, 1, data.notes.length).setNotes([data.notes.map(clean_)]);\n      }\n      if (Array.isArray(data.codebook) && data.codebook.length) {\n        let cb = findTab_(ss, 'surveyCodebook', sid);\n        if (!cb) {\n          cb = ss.insertSheet(uniqueName_(ss, name + ' 코드북'));\n          cb.addDeveloperMetadata('surveyCodebook', sid);\n        }\n        const cbHead = ['변수명', '섹션', '문항', '구성개념', '역문항', '비고', '응답 형식'];\n        const cbRows = data.codebook.map(function (r) {\n          const row = cbHead.map(function (_, i) { return clean_(r[i]); });\n          return row;\n        });\n        cb.clear();\n        cb.getRange(1, 1, 1, cbHead.length).setValues([cbHead])\n          .setFontWeight('bold').setBackground(HEADER_COLOR).setFontColor(HEADER_FONT);\n        cb.getRange(2, 1, cbRows.length, cbHead.length).setValues(cbRows);\n        cb.setFrozenRows(1);\n        cb.setColumnWidth(3, 420);\n      }\n      ss.getSheets().forEach(function (s) {\n        if (s.getSheetId() !== sh.getSheetId() && s.getLastRow() === 0 && !s.getFormUrl() && ss.getSheets().length > 1) ss.deleteSheet(s);\n      });\n    }\n\n    const row = [new Date()].concat(data.answers.map(function (v) {\n      if (Array.isArray(v)) v = v.join(', ');\n      if (typeof v === 'number') return v;\n      return clean_(v);\n    }));\n    sh.appendRow(row);\n    return json_({ ok: true });\n  } catch (err) {\n    return json_({ ok: false, error: String(err) });\n  } finally {\n    lock.releaseLock();\n  }\n}\n\nfunction doGet(e) {\n  if (e && e.parameter && e.parameter.admin) return admin_(e.parameter);\n  if (e && e.parameter && e.parameter.img) return getImg_(e.parameter.img);\n  if (e && e.parameter && e.parameter.report) return report_(e.parameter.report, e.parameter.key);\n  const id = e && e.parameter && e.parameter.id;\n  if (!id) return json_({ ok: true, service: 'survey-collector' });\n  const reg = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(REG);\n  const f = reg && reg.getRange('A:A').createTextFinder(String(id).toLowerCase()).matchEntireCell(true).findNext();\n  if (!f) return json_({ ok: false, error: 'not_found' });\n  return json_({ ok: true, survey: JSON.parse(reg.getRange(f.getRow(), 2).getValue()) });\n}\n\nfunction register_(data) {\n  const slug = String(data.slug || '').toLowerCase();\n  if (!/^[a-z0-9][a-z0-9-]{2,39}$/.test(slug) || !data.survey) return json_({ ok: false, error: 'bad_slug' });\n  const json = JSON.stringify(data.survey);\n  if (json.length > 49000) return json_({ ok: false, error: 'too_long' });\n  const ss = SpreadsheetApp.getActiveSpreadsheet();\n  let reg = ss.getSheetByName(REG);\n  if (!reg) {\n    reg = ss.insertSheet(REG);\n    reg.appendRow(['짧은 이름', '설문 내용', '등록 시각']);\n    reg.hideSheet();\n  }\n  const f = reg.getRange('A:A').createTextFinder(slug).matchEntireCell(true).findNext();\n  if (f) return json_({ ok: false, error: 'taken' });\n  const state = data.bs ? JSON.stringify(data.bs) : '';\n  reg.appendRow([slug, json, new Date(), String(data.key || '').slice(0, 40), state.length < 49000 ? state : '']);\n  return json_({ ok: true });\n}\n\nfunction report_(slug, key) {\n  const ss = SpreadsheetApp.getActiveSpreadsheet();\n  const reg = ss.getSheetByName(REG);\n  const f = reg && reg.getRange('A:A').createTextFinder(String(slug).toLowerCase()).matchEntireCell(true).findNext();\n  if (!f) return json_({ ok: false, error: 'not_found' });\n  const saved = String(reg.getRange(f.getRow(), 4).getValue() || '');\n  if (!saved || saved !== String(key || '')) return json_({ ok: false, error: 'forbidden' });\n  const survey = JSON.parse(reg.getRange(f.getRow(), 2).getValue());\n  const sh = findTab_(ss, 'surveyId', String(survey.id).replace(/[^\\w-]/g, ''));\n  if (!sh || sh.getLastRow() < 1) return json_({ ok: true, survey: survey, headers: [], rows: [] });\n  const vals = sh.getDataRange().getValues();\n  const rows = vals.slice(1).map(function (r) {\n    return r.map(function (v) { return v instanceof Date ? v.toISOString() : v; });\n  });\n  return json_({ ok: true, survey: survey, headers: vals[0], rows: rows });\n}\n\n// 내 설문함: 관리자 비밀번호는 브라우저에서 해시로 바꿔 보내고, 해시만 저장합니다\nfunction admin_(p) {\n  const props = PropertiesService.getScriptProperties();\n  const saved = props.getProperty('ADMIN_HASH');\n  const h = String(p.h || '');\n  if (p.admin === 'status') return json_({ ok: true, hasPw: !!saved });\n  if (p.admin === 'setpw') {\n    if (saved) return json_({ ok: false, error: 'already_set' });\n    if (!/^[0-9a-f]{64}$/.test(h)) return json_({ ok: false, error: 'bad_hash' });\n    props.setProperty('ADMIN_HASH', h);\n    return json_({ ok: true });\n  }\n  if (!saved || h !== saved) return json_({ ok: false, error: 'forbidden' });\n  const ss = SpreadsheetApp.getActiveSpreadsheet();\n  const reg = ss.getSheetByName(REG);\n  if (!reg || reg.getLastRow() < 2) return json_({ ok: true, items: [] });\n  const vals = reg.getRange(2, 1, reg.getLastRow() - 1, Math.max(5, reg.getLastColumn())).getValues();\n  if (p.admin === 'list') {\n    const items = vals.map(function (r) {\n      let sv = {};\n      try { sv = JSON.parse(r[1]); } catch (err) {}\n      const sh = sv.id ? findTab_(ss, 'surveyId', String(sv.id).replace(/[^\\w-]/g, '')) : null;\n      return {\n        slug: r[0], title: sv.t || '', org: sv.o || '', kind: sv.m === 'r' ? 'research' : 'customer',\n        created: r[2] instanceof Date ? r[2].toISOString() : String(r[2] || ''),\n        key: String(r[3] || ''), hasState: !!r[4],\n        responses: sh ? Math.max(0, sh.getLastRow() - 1) : 0, tab: sh ? sh.getName() : '',\n        th: sv.th || ''\n      };\n    }).reverse();\n    return json_({ ok: true, items: items });\n  }\n  if (p.admin === 'delete') {\n    const slug = String(p.slug || '').toLowerCase();\n    for (let i = 0; i < vals.length; i++) {\n      if (String(vals[i][0]) === slug) { reg.deleteRow(i + 2); return json_({ ok: true }); }\n    }\n    return json_({ ok: false, error: 'not_found' });\n  }\n  if (p.admin === 'state') {\n    const slug = String(p.slug || '').toLowerCase();\n    for (let i = 0; i < vals.length; i++) {\n      if (String(vals[i][0]) === slug) {\n        let sv = {}, st = null;\n        try { sv = JSON.parse(vals[i][1]); } catch (err) {}\n        try { st = vals[i][4] ? JSON.parse(vals[i][4]) : null; } catch (err) {}\n        return json_({ ok: true, survey: sv, state: st });\n      }\n    }\n    return json_({ ok: false, error: 'not_found' });\n  }\n  return json_({ ok: false, error: 'bad_request' });\n}\n\nfunction shortName_(sid, title) {\n  let t = String(title || '설문').replace(/[\\[\\]\\*\\?\\/\\\\:]/g, ' ').replace(/\\s+/g, ' ').trim();\n  t = t.replace(/(에 관한|에 대한)?\\s*(설문 조사|설문조사|설문|조사)$/, '').trim() || '설문';\n  if (t.length > 12) t = t.slice(0, 12).trim() + '…';\n  return t + ' ' + sid.slice(-4);\n}\n\nfunction uniqueName_(ss, base) {\n  let n = base, i = 2;\n  while (ss.getSheetByName(n)) n = base + ' (' + (i++) + ')';\n  return n;\n}\n\nfunction findTab_(ss, key, value) {\n  const found = ss.createDeveloperMetadataFinder().withKey(key).withValue(value).find();\n  for (let i = 0; i < found.length; i++) {\n    const sh = found[i].getLocation().getSheet();\n    if (sh) return sh;\n  }\n  return null;\n}\n\nfunction clean_(v) {\n  let s = String(v == null ? '' : v).slice(0, MAX_CELL);\n  if (/^[=+\\-@]/.test(s)) s = \"'\" + s;\n  return s;\n}\n\nfunction json_(o) {\n  return ContentService.createTextOutput(JSON.stringify(o)).setMimeType(ContentService.MimeType.JSON);\n}\n\nfunction saveImg_(data) {\n  const id = String(data.id || '');\n  const d = String(data.data || '');\n  if (!/^[a-z0-9]{8,24}$/.test(id) || !/^data:image\\/(jpeg|png|webp);base64,/.test(d) || d.length > 900000) return json_({ ok: false, error: 'bad_image' });\n  const ss = SpreadsheetApp.getActiveSpreadsheet();\n  let sh = ss.getSheetByName(IMG);\n  if (!sh) { sh = ss.insertSheet(IMG); sh.appendRow(['이미지 ID', '올린 시각', '내용(나눠 저장)']); sh.hideSheet(); }\n  if (sh.getRange('A:A').createTextFinder(id).matchEntireCell(true).findNext()) return json_({ ok: true });\n  const parts = [];\n  for (let i = 0; i < d.length; i += 45000) parts.push(d.slice(i, i + 45000));\n  sh.appendRow([id, new Date()].concat(parts));\n  return json_({ ok: true });\n}\n\nfunction getImg_(id) {\n  const sh = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(IMG);\n  const f = sh && sh.getRange('A:A').createTextFinder(String(id)).matchEntireCell(true).findNext();\n  if (!f) return json_({ ok: false, error: 'not_found' });\n  const row = sh.getRange(f.getRow(), 3, 1, Math.max(1, sh.getLastColumn() - 2)).getValues()[0];\n  return json_({ ok: true, data: row.join('') });\n}\n";
 const BASE_DEFAULT="https://sabsci-lab.com/survey";
 const mem={get(k){try{return localStorage.getItem(k)||""}catch(e){return ""}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
 
@@ -328,7 +353,7 @@ const DOMAINS=[
 const ALL=DOMAINS.flatMap(d=>d.c);
 const DEMO=[
  {c:"D_GEN",x:"성별을 선택해 주세요.",y:"choice",o:["남성","여성"],on:1},
- {c:"D_AGE",x:"만 나이를 숫자로 적어 주세요.",y:"text",on:1},
+ {c:"D_BIRTH",x:"태어난 연도를 4자리 숫자로 적어 주세요. (예: 1995)",y:"text",on:1},
  {c:"D_AGEG",x:"연령대를 선택해 주세요.",y:"choice",o:["10대","20대","30대","40대","50대","60대 이상"]},
  {c:"D_EDU",x:"최종 학력을 선택해 주세요.",y:"choice",o:["고졸 이하","전문대 재학·졸업","4년제 재학·졸업","대학원 재학·졸업"]},
  {c:"D_JOB",x:"현재 직업을 선택해 주세요.",y:"choice",o:["학생","회사원","공무원","자영업","전문직","주부","무직","기타"]},
@@ -348,17 +373,13 @@ function addConstruct(c){
   S.secs.push({id:"s"+(++sid),key:c.code,prefix:c.code,name:c.n,title:c.n.replace(/\s*\(.*\)$/,""),ref:c.ref,stim:"",rn:false,items:c.items.map(t=>typeof t==="string"?{text:t,rev:false}:{text:t.t,rev:!!t.r,l:t.l?t.l.slice():null,y:t.y||null})});
 }
 function example(){
-  $("#f_title").value="온라인 신선식품 배송서비스 이용 경험에 관한 설문";
-  $("#f_purpose").value="온라인 신선식품 배송서비스의 이용 경험이 고객만족과 재구매의도에 미치는 영향을 알아보기 위함입니다.";
-  $("#f_pi").value="이시내";$("#f_aff").value="단국대학교";$("#f_mail").value="snlee@dankook.ac.kr";
-  $("#f_irb").value="";$("#f_min").value="7";$("#f_reward").value="";
-  $("#f_target").value="이 배송서비스";
-  S.secs=[];["SAT","PBC","RPI"].forEach(k=>addConstruct(ALL.find(c=>c.code===k)));
-  S.demo={};DEMO.forEach(d=>S.demo[d.c]=!!d.on);S.demo.D_USE=true;
+  FIELDS.forEach(k=>$("#"+k).value="");
+  $("#f_pi").value="이시내";$("#f_aff").value="단국대학교";$("#f_mail").value="snlee@dankook.ac.kr";$("#f_min").value="10";
+  S.secs=[];S.demo={D_GEN:true,D_BIRTH:true};S.cdemo=[];
 }
 
 /* ---------- text helpers ---------- */
-function noun(){return $("#f_target").value.trim()||"이 제품"}
+function noun(){return $("#f_target").value.trim()||"이 제품·서비스"}
 function fill(t){
   const n=noun();
   return t.replace(/\{대상\}(은\(는\)|을\(를\)|이\(가\))?/g,(m,p)=>{
@@ -411,7 +432,9 @@ function renderSecs(){
     <div class="sec-b">
       <div class="sec-o"><span><span class="code">${esc(s.prefix)}</span> ${esc(s.name)} · ${esc(s.ref)}</span>
         <label class="toggle" style="font-size:12.5px"><input type="checkbox" data-k="rn" ${s.rn?"checked":""}> 섹션 안 문항 순서 무작위</label></div>
-      <textarea data-k="stim" rows="2" placeholder="상황 제시 지문 (선택) — 예: 다음은 최근 이용한 배송서비스를 떠올리며 응답해 주세요." aria-label="상황 제시 지문">${esc(s.stim)}</textarea>
+      <textarea data-k="stim" rows="2" placeholder="상황 제시 지문 (선택) — 예: 아래 광고를 보신 뒤 응답해 주세요." aria-label="상황 제시 지문">${esc(s.stim)}</textarea>
+      <div class="simg-ed">${s.img?`<img data-pim="${esc(s.img.id)}" alt="섹션 이미지 미리보기"><div class="stack" style="gap:6px"><span class="hint" style="margin:0">응답자가 이 이미지를 보고 아래 문항에 답합니다.</span><div class="row" style="gap:6px"><label class="btn ghost sm" style="cursor:pointer">이미지 바꾸기<input type="file" accept="image/*" data-k="img" hidden></label><button class="btn ghost sm" data-imgdel type="button">이미지 빼기</button></div></div>`:`<label class="btn ghost sm" style="cursor:pointer">+ 평가할 이미지 넣기<input type="file" accept="image/*" data-k="img" hidden></label><span class="hint" data-imsg style="margin:0">광고·제품·패키지 시안 등 (선택)</span>`}</div>
+      <input data-k="vd" value="${esc(s.vd||"")}" placeholder="영상·자료 링크 (선택) — 유튜브, 비메오, 구글 드라이브 영상은 화면 안에서 재생됩니다" aria-label="영상 또는 자료 링크">
       ${s.items.map((it,ii)=>`<div class="it" data-i="${ii}"><span class="c">${esc(s.prefix)}${ii+1}${it.rev?"_R":""}</span>
         <div style="display:flex;flex-direction:column;gap:4px;min-width:0"><input value="${esc(fill(it.text))}" data-ik="text" aria-label="문항">${it.l?`<div class="row" style="gap:6px;flex-wrap:nowrap"><input value="${esc(it.l[0])}" data-ik="l0" aria-label="왼쪽 끝(1점) 표현" style="font-size:12.5px;padding:4px 8px"><span class="hint">↔</span><input value="${esc(it.l[1])}" data-ik="l1" aria-label="오른쪽 끝(7점) 표현" style="font-size:12.5px;padding:4px 8px"></div>`:""}${it.y==="text"?`<span class="hint">숫자·단답 응답</span>`:""}</div>
         <label class="rev"><input type="checkbox" data-ik="rev" ${it.rev?"checked":""}> 역문항</label>
@@ -423,6 +446,10 @@ function renderSecs(){
     el.querySelector('[data-k="title"]').oninput=e=>{s.title=e.target.value;update()};
     el.querySelector('[data-k="stim"]').oninput=e=>{s.stim=e.target.value;update()};
     el.querySelector('[data-k="rn"]').onchange=e=>{s.rn=e.target.checked;update()};
+    el.querySelector('[data-k="vd"]').onchange=e=>{s.vd=e.target.value.trim();update()};
+    el.querySelector('[data-k="img"]').onchange=e=>{const fl=e.target.files[0];if(fl)uploadImg(s,fl,el)};
+    const dl=el.querySelector("[data-imgdel]");if(dl)dl.onclick=()=>{delete s.img;renderAll()};
+    el.querySelectorAll("img[data-pim]").forEach(paintImg);
     el.querySelectorAll("[data-mv]").forEach(b=>b.onclick=()=>{const i=S.secs.indexOf(s),j=i+ +b.dataset.mv;[S.secs[i],S.secs[j]]=[S.secs[j],S.secs[i]];renderAll()});
     el.querySelector("[data-rm]").onclick=()=>{S.secs=S.secs.filter(x=>x!==s);renderAll()};
     el.querySelector("[data-addi]").onclick=()=>{s.items.push({text:"",rev:false});renderAll()};
@@ -445,9 +472,19 @@ function renderAttSel(){
   if(cur&&S.secs.some(s=>s.id===cur))$("#attSec").value=cur;
   else if(S.secs.length)$("#attSec").value=S.secs[Math.floor((S.secs.length-1)/2)].id;
 }
+function cdCode(){let n=1;const used=new Set((S.cdemo||[]).map(d=>d.c));while(used.has("D_ADD"+n))n++;return "D_ADD"+n}
+function renderCDemo(){
+  const L=S.cdemo||(S.cdemo=[]);const TY={choice:"하나 고르기",checkbox:"여러 개 고르기",text:"직접 적기"};
+  $("#cdemo").innerHTML=L.map((d,i)=>`<div class="cditem"><div class="top"><input type="checkbox" data-i="${i}" class="cd_on" ${d.on!==false?"checked":""} aria-label="포함"><input type="text" data-i="${i}" class="cd_x" value="${esc(d.x)}" aria-label="문항"><span class="code">${d.c}</span><button class="x" data-i="${i}" title="삭제" aria-label="삭제">✕</button></div>
+    <div class="opts">${TY[d.y]||""}${d.o&&d.o.length?" · "+d.o.map(esc).join(" / "):""}</div></div>`).join("");
+  $$("#cdemo .cd_on").forEach(el=>el.onchange=()=>{L[+el.dataset.i].on=el.checked;update()});
+  $$("#cdemo .cd_x").forEach(el=>el.oninput=()=>{L[+el.dataset.i].x=el.value;update()});
+  $$("#cdemo .x").forEach(el=>el.onclick=()=>{L.splice(+el.dataset.i,1);renderCDemo();update()});
+}
 function renderDemo(){
-  $("#demo").innerHTML=DEMO.map(d=>`<label class="toggle" for="dm_${d.c}"><input type="checkbox" id="dm_${d.c}" ${S.demo[d.c]?"checked":""}> ${esc(fill(d.x).replace(/(을|를) 선택해 주세요\.|(을|를) 숫자로 적어 주세요\./,""))} <span class="code" style="margin-left:auto">${d.c}</span></label>`).join("");
+  $("#demo").innerHTML=DEMO.map(d=>`<label class="toggle" for="dm_${d.c}"><input type="checkbox" id="dm_${d.c}" ${S.demo[d.c]?"checked":""}> ${esc(fill(d.x).replace(/(을|를) 선택해 주세요\.|(을|를) 숫자로 적어 주세요\.|를 4자리 숫자로 적어 주세요\. \(예: 1995\)/,""))} <span class="code" style="margin-left:auto">${d.c}</span></label>`).join("");
   DEMO.forEach(d=>$("#dm_"+d.c).onchange=e=>{S.demo[d.c]=e.target.checked;update()});
+  renderCDemo();
 }
 
 /* ---------- build survey ---------- */
@@ -459,10 +496,12 @@ function survey(){
     if(att===s.id){q.splice(Math.ceil(q.length/2),0,{y:"scale",x:$("#attText").value.trim(),r:1,c:"ATT1",k:"주의 확인",n:"정답: 4"})}
     const o={t:hide?`PART ${si+1}`:(s.title||s.name),q};
     if(s.stim.trim())o.i=s.stim.trim();
+    if(s.img&&s.img.id)o.im=s.img.id;
+    if(s.vd&&/^https?:\/\//i.test(s.vd))o.vd=s.vd;
     if(s.rn)o.rn=1;
     return o;
   }).filter(s=>s.q.length);
-  const demo=DEMO.filter(d=>S.demo[d.c]).map(d=>{const o={y:d.y,x:fill(d.x),r:1,c:d.c,k:"응답자 정보"};if(d.o)o.o=d.o.slice();return o});
+  const demo=DEMO.filter(d=>S.demo[d.c]).concat((S.cdemo||[]).filter(d=>d.on!==false&&d.x.trim())).map(d=>{const o={y:d.y,x:fill(d.x).trim(),r:1,c:d.c,k:"응답자 정보"};if(d.o&&d.y!=="text")o.o=d.o.slice();return o});
   if(demo.length)secs.push({t:hide?`PART ${secs.length+1}`:"응답자 정보",q:demo});
   secs.forEach(s=>s.q.forEach(q=>{if(!q.v)delete q.v}));
   const P={m:"r",t:$("#f_title").value.trim()||"연구 설문",d:$("#f_desc").value.trim(),o:[$("#f_aff").value.trim(),$("#f_pi").value.trim()&&("연구책임자 "+$("#f_pi").value.trim())].filter(Boolean).join(" · "),s:secs};
@@ -486,7 +525,8 @@ function renderPreview(P){
   };
   $("#pv").innerHTML=`<div class="c cover"><img src="${LOGO||DEFAULT_LOGO}" alt="" style="height:28px;max-width:170px;object-fit:contain;display:block;margin-bottom:8px">${P.o?`<p class="org">${esc(P.o)}</p>`:""}<h3>${esc(P.t)}</h3><p class="d">${esc(P.d)}</p>${P.irb?`<p class="d" style="font-size:11.5px;margin-top:6px">IRB 승인번호 ${esc(P.irb)}</p>`:""}</div>`+
     (P.c?`<div class="sb">연구 참여 동의서</div><div class="c" style="border-radius:0 0 10px 10px;margin-top:-10px"><p class="d" style="color:#17213a">${esc(P.c)}</p></div><div class="c"><p class="t">위 내용을 읽고 이해하였으며, 연구에 참여하는 데 동의하십니까? <span class="req">*</span></p><div class="op">네, 동의합니다.</div><div class="op">아니요, 동의하지 않습니다.</div></div>`:"")+
-    P.s.map((s,si)=>`<div class="sb">${si+1}. ${esc(s.t)}${s.rn?' <span style="font-weight:400;font-size:11.5px;opacity:.8">· 순서 무작위</span>':""}</div><div class="sd">이어서 아래 ${s.q.length}개의 질문에 응답하여 주세요.</div>${s.i?`<div class="stim">${esc(s.i)}</div>`:""}${s.q.map((q,i)=>qh(q,i+1)).join("")}`).join("");
+    P.s.map((s,si)=>`<div class="sb">${si+1}. ${esc(s.t)}${s.rn?' <span style="font-weight:400;font-size:11.5px;opacity:.8">· 순서 무작위</span>':""}</div><div class="sd">이어서 아래 ${s.q.length}개의 질문에 응답하여 주세요.</div>${s.i?`<div class="stim">${esc(s.i)}</div>`:""}${s.vd?vidHTML(s.vd,esc):""}${s.im?`<div class="pv-img"><img data-pim="${esc(s.im)}" alt="평가 자료 이미지"></div>`:""}${s.q.map((q,i)=>qh(q,i+1)).join("")}`).join("");
+  setTimeout(()=>document.querySelectorAll("#pv img[data-pim],.pv img[data-pim]").forEach(paintImg),0);
 }
 let cbRows=[];
 function renderCodebook(P){
@@ -546,7 +586,7 @@ $("#newStudy").onclick=()=>{
   FIELDS.forEach(k=>$("#"+k).value="");
   $("#f_pi").value="이시내";$("#f_aff").value="단국대학교";$("#f_mail").value="snlee@dankook.ac.kr";$("#f_min").value="10";
   delete $("#f_desc").dataset.touched;delete $("#f_consent").dataset.touched;
-  S.secs=[];S.demo={D_GEN:true,D_AGE:true};autoTexts();renderAll();
+  S.secs=[];S.demo={D_GEN:true,D_BIRTH:true};S.cdemo=[];autoTexts();renderAll();
 };
 $$(".tabs button").forEach(b=>b.onclick=()=>{
   $$(".tabs button").forEach(x=>x.classList.toggle("on",x===b));
@@ -628,6 +668,52 @@ document.getElementById("copyReport").onclick=async()=>{try{await navigator.clip
 document.getElementById("dlQR").onclick=()=>{const box=document.getElementById("qr"),c=box.querySelector("canvas"),im=box.querySelector("img");const src=c?c.toDataURL("image/png"):(im&&im.src);if(!src)return;const pad=document.createElement("canvas"),W=600;pad.width=pad.height=W;const g=pad.getContext("2d");g.fillStyle="#fff";g.fillRect(0,0,W,W);const i=new Image();i.onload=()=>{g.imageSmoothingEnabled=false;g.drawImage(i,40,40,W-80,W-80);const a=document.createElement("a");a.href=pad.toDataURL("image/png");a.download="QR_"+(document.getElementById("shortLink").value.split("#")[1]||"survey")+".png";a.click()};i.src=src};
 document.getElementById("copyShort").onclick=async()=>{try{await navigator.clipboard.writeText(document.getElementById("shortLink").value);document.getElementById("shortStatus").textContent="짧은 링크를 복사했습니다."}catch(e){document.getElementById("shortLink").select()}};
 
+/* ---------- 섹션 영상 ---------- */
+function vidEmbed(u){u=String(u||"").trim();let m;
+  if(m=u.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?(?:.*&)?v=|shorts\/|embed\/|live\/))([\w-]{11})/))return "https://www.youtube-nocookie.com/embed/"+m[1]+"?rel=0&playsinline=1";
+  if(m=u.match(/vimeo\.com\/(?:video\/)?(\d+)/))return "https://player.vimeo.com/video/"+m[1];
+  if(m=u.match(/drive\.google\.com\/file\/d\/([\w-]+)/))return "https://drive.google.com/file/d/"+m[1]+"/preview";
+  return "";}
+function vidHTML(u,esc){const e=vidEmbed(u);if(e)return `<div class="vwrap"><iframe src="${e}" title="평가 자료 영상" allow="accelerometer; autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen loading="lazy"></iframe></div>`;
+  if(/^https?:\/\//i.test(u))return `<a class="vlink" href="${esc(u)}" target="_blank" rel="noopener">자료 열기 (새 창) ↗</a>`;return "";}
+/* ---------- 섹션 이미지 ---------- */
+var IMGC={};
+function epURL(){return $("#endpoint").value.trim()}
+async function getImg(id){
+  if(IMGC[id])return IMGC[id];
+  const p=fetch(epURL()+"?img="+encodeURIComponent(id)).then(r=>r.json()).then(j=>{if(!j.ok)throw 0;IMGC[id]=j.data;return j.data}).catch(()=>{delete IMGC[id];return ""});
+  IMGC[id]=p;return p;
+}
+function paintImg(img){const id=img.dataset.pim;Promise.resolve(getImg(id)).then(d=>{if(d)img.src=d})}
+function shrinkImg(file){return new Promise((res,rej)=>{const fr=new FileReader();fr.onload=()=>{const im=new Image();im.onload=()=>{
+  let q=.85,W=1400;const go=()=>{const k=Math.min(1,W/Math.max(im.width,im.height));const c=document.createElement("canvas");c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);
+    const g=c.getContext("2d");g.fillStyle="#fff";g.fillRect(0,0,c.width,c.height);g.drawImage(im,0,0,c.width,c.height);const d=c.toDataURL("image/jpeg",q);
+    if(d.length>600000&&W>600){W-=200;q=Math.max(.7,q-.05);return go()}res(d)};go()};im.onerror=rej;im.src=fr.result};fr.onerror=rej;fr.readAsDataURL(file)})}
+async function uploadImg(sec,file,el){
+  const msg=el.querySelector("[data-imsg]")||el.querySelector(".simg-ed .hint");
+  const say=(t,bad)=>{if(msg){msg.textContent=t;msg.style.color=bad?"#c0392b":""}};
+  if(!/^image\//.test(file.type)){say("이미지 파일만 넣을 수 있습니다.",1);return}
+  say("이미지를 올리는 중…");
+  try{
+    const d=await shrinkImg(file);
+    const id=(Date.now().toString(36)+Math.random().toString(36).slice(2,8)).toLowerCase().replace(/[^a-z0-9]/g,"").slice(0,20);
+    await fetch(epURL(),{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({action:"img",id,data:d})});
+    const j=await (await fetch(epURL()+"?img="+id)).json();
+    if(!j.ok)throw new Error(j.error||"x");
+    IMGC[id]=d;sec.img={id};renderAll();
+  }catch(e){say("이미지를 올리지 못했습니다. 수집 코드가 최신 버전인지 확인해 주세요.",1)}
+}
+
+/* ---------- 응답자 정보 직접 추가 ---------- */
+(function(){const y=$("#cd_y"),o=$("#cd_o"),msg=$("#cd_msg");
+  y.onchange=()=>{o.hidden=y.value==="text"};
+  $("#cd_add").onclick=()=>{const x=$("#cd_x").value.trim();msg.textContent="";msg.style.color="";
+    if(!x){msg.textContent="문항을 적어 주세요.";msg.style.color="#c0392b";return}
+    const opts=o.value.split(/[,，\n]/).map(t=>t.trim()).filter(Boolean);
+    if(y.value!=="text"&&opts.length<2){msg.textContent="선택지를 2개 이상 쉼표로 나눠 적어 주세요.";msg.style.color="#c0392b";return}
+    (S.cdemo||(S.cdemo=[])).push({c:cdCode(),x,y:y.value,o:y.value==="text"?undefined:opts,on:true});
+    $("#cd_x").value="";o.value="";renderCDemo();update();msg.textContent="추가했습니다.";}
+})();
 /* ---------- 상태 저장·불러오기 (내 설문함) ---------- */
 function getState(){const f={};FIELDS.concat(["f_desc","f_consent","attText"]).forEach(k=>f[k]=$("#"+k).value);
   return {v:1,tool:"research",S,sid,f,touched:{desc:!!$("#f_desc").dataset.touched,consent:!!$("#f_consent").dataset.touched},

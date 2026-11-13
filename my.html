@@ -117,11 +117,13 @@
   .item .m code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12.5px;color:var(--navy);background:#eef0fa;padding:1px 7px;border-radius:5px}
   .chip{display:inline-block;font-size:11.5px;font-weight:700;padding:2px 9px;border-radius:999px;background:#eef0fa;color:var(--navy);margin-right:8px;vertical-align:2px}
   .chip.r{background:#fde8ef;color:#b8335f}
-  .resp{display:flex;flex-direction:column;align-items:flex-end;min-width:64px}
-  .resp b{display:block;font-size:26px;font-weight:800;color:var(--navy);line-height:1.1;font-variant-numeric:tabular-nums}
-  .resp span{font-size:12px;color:var(--muted)}
+  .rcount{display:flex;flex-direction:column;align-items:flex-end;gap:2px;min-width:64px}
+  .rcount b{display:block;font-size:26px;font-weight:800;color:var(--navy);line-height:1.1;font-variant-numeric:tabular-nums}
+  .rcount span{font-size:12px;color:var(--muted)}
   .acts{grid-column:1/-1;display:flex;gap:6px;flex-wrap:wrap;border-top:1px dashed var(--line);padding-top:12px}
   .acts .btn{padding:7px 13px;font-size:13px}
+  .acts .del{order:9;margin-left:auto;color:#c0392b;border-color:#f0c7c2}
+  .acts .del:hover{background:#fdf0ee}
   .acts .btn[disabled]{opacity:.4;cursor:not-allowed}
   .empty{background:#fff;border:1px dashed var(--line);border-radius:16px;padding:40px;text-align:center;color:var(--muted)}
   .toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 18px;border-radius:999px;font-size:14px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:30}
@@ -132,7 +134,8 @@
   .modal .box h3{font-size:17px;margin-bottom:4px}
   .modal .box p{font-size:13px;color:var(--muted);word-break:break-all;margin-bottom:14px}
   #qrBox{display:inline-block;padding:10px;border:1px solid var(--line);border-radius:12px;line-height:0}
-  @media (max-width:640px){.item{grid-template-columns:1fr}.resp{align-items:flex-start}.search{min-width:0;width:100%}}
+  @media (max-width:640px){.item{grid-template-columns:1fr}.rcount{align-items:flex-start}.search{min-width:0;width:100%}}
+body,h1,h2,h3,p,label,legend,.t{word-break:keep-all;overflow-wrap:break-word}
 </style>
 </head>
 <body>
@@ -155,6 +158,10 @@
   </div>
 </main>
 <div class="modal" id="qrModal" role="dialog" aria-modal="true" aria-labelledby="qrTitle"><div class="box"><h3 id="qrTitle"></h3><p id="qrUrl"></p><div id="qrBox"></div><div style="margin-top:16px"><button class="btn ghost sm" id="qrClose">닫기</button></div></div></div>
+<div class="modal" id="delModal" role="dialog" aria-modal="true" aria-labelledby="delTitle"><div class="box" style="text-align:left"><h3 id="delTitle">설문을 삭제할까요?</h3>
+<p id="delName" style="color:var(--ink);font-weight:700;margin:6px 0 10px"></p>
+<p style="color:var(--muted);font-size:13.5px;line-height:1.6;margin-bottom:16px">· 설문 링크와 QR이 더 이상 열리지 않습니다.<br>· 짧은 이름이 비어서 다른 설문에 다시 쓸 수 있습니다.<br>· 지금까지 모인 응답은 구글 시트 탭에 그대로 남습니다.</p>
+<div style="display:flex;gap:8px;justify-content:flex-end"><button class="btn ghost sm" id="delNo">취소</button><button class="btn sm" id="delYes" style="background:#c0392b;color:#fff">삭제</button></div></div></div>
 <div class="toast" id="toast" role="status"></div>
 <footer>
   <div class="wrap">
@@ -218,12 +225,13 @@ function render(){
       return `<div class="item" style="--c:${/^#[0-9a-f]{6}$/i.test(it.th||"")?it.th:"var(--navy)"}" data-slug="${esc(it.slug)}">
         <div><div class="t"><span class="chip ${it.kind==="research"?"r":""}">${it.kind==="research"?"연구":"만족도"}</span>${esc(it.title||"(제목 없음)")}</div>
           <div class="m"><code>survey#${esc(it.slug)}</code>${it.org?`<span>${esc(it.org)}</span>`:""}<span>만든 날 ${fmt(it.created)}</span>${it.tab?`<span>시트 탭: ${esc(it.tab)}</span>`:""}</div></div>
-        <div class="resp"><b>${it.responses}</b><span>응답</span></div>
+        <div class="rcount"><b>${it.responses}</b><span>응답</span></div>
         <div class="acts">
           <button class="btn ghost" data-a="copy" data-u="${esc(surl)}">설문 링크 복사</button>
           <a class="btn ghost" href="${esc(surl)}" target="_blank" rel="noopener">설문 열기</a>
           <button class="btn ghost" data-a="qr" data-u="${esc(surl)}" data-t="${esc(it.title)}">QR</button>
           ${rurl?`<a class="btn primary" href="${esc(rurl)}" target="_blank" rel="noopener">보고서 열기</a><button class="btn ghost" data-a="copy" data-u="${esc(rurl)}" data-m="보고서 링크를 복사했습니다">보고서 링크 복사</button>`:`<button class="btn ghost" disabled title="보고서 기능 이전에 만든 설문입니다">보고서 없음</button>`}
+          <button class="btn ghost del" data-a="del" data-t="${esc(it.title)}">삭제</button>
           <button class="btn ghost" data-a="load" ${it.hasState?"":'disabled title="이전 방식으로 만든 설문이라 불러올 수 없습니다"'}>불러와서 다시 쓰기</button>
         </div></div>`}).join(""):`<div class="empty">${ITEMS.length?"검색 결과가 없습니다.":"아직 짧은 링크로 만든 설문이 없습니다. 서베이 툴에서 설문을 만들고 짧은 링크를 만들면 여기에 모입니다."}</div>`}</div>`;
   $("#q").oninput=e=>{Q=e.target.value.trim().toLowerCase();const pos=e.target.selectionStart;render();const q=$("#q");q.focus();q.setSelectionRange(pos,pos)};
@@ -232,6 +240,11 @@ function render(){
   $$("[data-a=copy]").forEach(b=>b.onclick=()=>copy(b.dataset.u,b.dataset.m||"설문 링크를 복사했습니다"));
   $$("[data-a=qr]").forEach(b=>b.onclick=()=>{$("#qrTitle").textContent=b.dataset.t||"설문 QR";$("#qrUrl").textContent=b.dataset.u;const box=$("#qrBox");box.innerHTML="";
     if(typeof QRCode==="function")new QRCode(box,{text:b.dataset.u,width:220,height:220,colorDark:"#0e2a6b",colorLight:"#ffffff",correctLevel:QRCode.CorrectLevel.M});$("#qrModal").classList.add("on")});
+  $$("[data-a=del]").forEach(b=>b.onclick=()=>{const slug=b.closest(".item").dataset.slug;$("#delName").textContent=(b.dataset.t||"(제목 없음)")+"  ·  survey#"+slug;$("#delModal").classList.add("on");
+    $("#delYes").onclick=async()=>{const y=$("#delYes");y.disabled=true;y.textContent="삭제하는 중…";
+      try{const r=await api({admin:"delete",h:H,slug});if(!r.ok)throw 0;ITEMS=ITEMS.filter(x=>x.slug!==slug);$("#delModal").classList.remove("on");render();toast("삭제했습니다. 이제 이 이름을 다시 쓸 수 있습니다")}
+      catch(e){toast("삭제하지 못했습니다. 수집 코드가 최신 버전인지 확인해 주세요")}
+      y.disabled=false;y.textContent="삭제"}});
   $$("[data-a=load]").forEach(b=>b.onclick=async()=>{
     const slug=b.closest(".item").dataset.slug;b.disabled=true;b.textContent="불러오는 중…";
     try{const r=await api({admin:"state",h:H,slug});
@@ -241,9 +254,11 @@ function render(){
     }catch(e){b.disabled=false;b.textContent="불러와서 다시 쓰기";toast("불러오지 못했습니다")}
   });
 }
+$("#delNo").onclick=()=>$("#delModal").classList.remove("on");
+$("#delModal").onclick=e=>{if(e.target.id==="delModal")$("#delModal").classList.remove("on")};
 $("#qrClose").onclick=()=>$("#qrModal").classList.remove("on");
 $("#qrModal").onclick=e=>{if(e.target.id==="qrModal")$("#qrModal").classList.remove("on")};
-document.addEventListener("keydown",e=>{if(e.key==="Escape")$("#qrModal").classList.remove("on")});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"){$("#qrModal").classList.remove("on");$("#delModal").classList.remove("on")}});
 start();
 })();
 </script>
