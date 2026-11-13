@@ -120,6 +120,16 @@ code{font-family:var(--mono);font-size:12.5px;background:var(--soft);padding:1px
 #logoPv{height:28px;max-width:160px;object-fit:contain;background:#fff;border:1px solid var(--line);border-radius:6px;padding:3px 6px}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 [hidden]{display:none!important}
+.smedia{display:flex;flex-direction:column;gap:8px;padding:10px 14px;border-bottom:1px dashed var(--line)}
+.smedia input[data-k=vd]{font:inherit;font-size:13.5px}
+.simg-ed{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.simg-ed img{width:120px;max-height:120px;object-fit:contain;border:1px solid var(--line);border-radius:8px;background:#fff}
+.vwrap{position:relative;width:100%;aspect-ratio:16/9;border-radius:10px;overflow:hidden;background:#000;margin:0 0 12px}
+.vwrap iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.vlink{display:inline-block;margin:0 0 12px;padding:10px 16px;border:1px solid var(--line);border-radius:10px;background:#fff;font-weight:600;text-decoration:none;color:var(--navy)}
+.pv-img{margin:8px 0;text-align:center}
+.pv-img img{max-width:100%;max-height:420px;border-radius:8px;border:1px solid var(--line)}
+
 body,h1,h2,h3,p,label,legend,.t{word-break:keep-all;overflow-wrap:break-word}
 </style>
 </head>
@@ -344,6 +354,8 @@ function render(){
     const on=list.filter(i=>i.on).length;
     const si=SECS.indexOf(s);
     return `<div class="sec" data-sec="${s.key}"><div class="sec-h"><input class="sec-name" value="${esc(secName(s))}" aria-label="섹션 이름" data-sk="name"><span class="row" style="gap:6px;flex-wrap:nowrap"><span class="cnt">${on} / ${list.length}개 선택</span><button class="icon" data-smv="-1" aria-label="섹션 위로" ${si===0?"disabled":""}>↑</button><button class="icon" data-smv="1" aria-label="섹션 아래로" ${si===SECS.length-1?"disabled":""}>↓</button>${s.custom?`<button class="icon" data-sdel aria-label="섹션 삭제">✕</button>`:""}</span></div>
+      <div class="smedia"><div class="simg-ed">${s.img?`<img data-pim="${esc(s.img.id)}" alt="섹션 이미지 미리보기"><label class="btn ghost sm" style="cursor:pointer">이미지 바꾸기<input type="file" accept="image/*" data-k="img" hidden></label><button class="btn ghost sm" data-imgdel type="button">이미지 빼기</button><span class="hint" data-imsg style="margin:0"></span>`:`<label class="btn ghost sm" style="cursor:pointer">+ 이미지 넣기<input type="file" accept="image/*" data-k="img" hidden></label><span class="hint" data-imsg style="margin:0">이 섹션 위에 보여 줄 사진·포스터 (선택)</span>`}</div>
+      <input data-k="vd" value="${esc(s.vd||"")}" placeholder="영상·자료 링크 (선택) — 유튜브 주소를 넣으면 설문 안에서 재생됩니다" aria-label="영상 또는 자료 링크"></div>
       ${list.map((i,idx)=>`<div class="item ${i.on?"":"off"}" data-id="${i.id}">
         <input type="checkbox" ${i.on?"checked":""} aria-label="문항 포함" data-k="on">
         <div class="body">
@@ -367,6 +379,10 @@ function render(){
     const s=SECS.find(x=>x.key===box.dataset.sec);if(!s)return;
     box.querySelector('[data-sk="name"]').oninput=e=>{s.label=e.target.value;update()};
     box.querySelectorAll("[data-smv]").forEach(b=>b.onclick=()=>{const i=SECS.indexOf(s),j=i+ +b.dataset.smv;if(j<0||j>=SECS.length)return;[SECS[i],SECS[j]]=[SECS[j],SECS[i]];render()});
+    box.querySelector('[data-k="img"]').onchange=e=>{const fl=e.target.files[0];if(fl)uploadImg(s,fl,box)};
+    const idl=box.querySelector("[data-imgdel]");if(idl)idl.onclick=()=>{delete s.img;render()};
+    box.querySelector('[data-k="vd"]').onchange=e=>{s.vd=e.target.value.trim();update()};
+    box.querySelectorAll("img[data-pim]").forEach(paintImg);
     const d=box.querySelector("[data-sdel]");if(d)d.onclick=()=>{SECS=SECS.filter(x=>x!==s);items=items.filter(x=>x.sec!==s.key);render()};
   });
   const addSec=()=>{const n=$("#newSec").value.trim();if(!n){$("#newSec").focus();return}
@@ -402,13 +418,49 @@ function render(){
   update();
 }
 
+/* ---------- 섹션 영상 ---------- */
+function vidEmbed(u){u=String(u||"").trim();let m;
+  if(m=u.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?(?:.*&)?v=|shorts\/|embed\/|live\/))([\w-]{11})/))return "https://www.youtube-nocookie.com/embed/"+m[1]+"?rel=0&playsinline=1";
+  if(m=u.match(/vimeo\.com\/(?:video\/)?(\d+)/))return "https://player.vimeo.com/video/"+m[1];
+  if(m=u.match(/drive\.google\.com\/file\/d\/([\w-]+)/))return "https://drive.google.com/file/d/"+m[1]+"/preview";
+  return "";}
+function vidHTML(u,esc){const e=vidEmbed(u);if(e)return `<div class="vwrap"><iframe src="${e}" title="평가 자료 영상" allow="accelerometer; autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen loading="lazy"></iframe></div>`;
+  if(/^https?:\/\//i.test(u))return `<a class="vlink" href="${esc(u)}" target="_blank" rel="noopener">자료 열기 (새 창) ↗</a>`;return "";}
+/* ---------- 섹션 이미지 ---------- */
+var IMGC={};
+function epURL(){return $("#endpoint").value.trim()}
+async function getImg(id){
+  if(IMGC[id])return IMGC[id];
+  const p=fetch(epURL()+"?img="+encodeURIComponent(id)).then(r=>r.json()).then(j=>{if(!j.ok)throw 0;IMGC[id]=j.data;return j.data}).catch(()=>{delete IMGC[id];return ""});
+  IMGC[id]=p;return p;
+}
+function paintImg(img){const id=img.dataset.pim;Promise.resolve(getImg(id)).then(d=>{if(d)img.src=d})}
+function shrinkImg(file){return new Promise((res,rej)=>{const fr=new FileReader();fr.onload=()=>{const im=new Image();im.onload=()=>{
+  let q=.85,W=1400;const go=()=>{const k=Math.min(1,W/Math.max(im.width,im.height));const c=document.createElement("canvas");c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);
+    const g=c.getContext("2d");g.fillStyle="#fff";g.fillRect(0,0,c.width,c.height);g.drawImage(im,0,0,c.width,c.height);const d=c.toDataURL("image/jpeg",q);
+    if(d.length>600000&&W>600){W-=200;q=Math.max(.7,q-.05);return go()}res(d)};go()};im.onerror=rej;im.src=fr.result};fr.onerror=rej;fr.readAsDataURL(file)})}
+async function uploadImg(sec,file,el){
+  const msg=el.querySelector("[data-imsg]")||el.querySelector(".simg-ed .hint");
+  const say=(t,bad)=>{if(msg){msg.textContent=t;msg.style.color=bad?"#c0392b":""}};
+  if(!/^image\//.test(file.type)){say("이미지 파일만 넣을 수 있습니다.",1);return}
+  say("이미지를 올리는 중…");
+  try{
+    const d=await shrinkImg(file);
+    const id=(Date.now().toString(36)+Math.random().toString(36).slice(2,8)).toLowerCase().replace(/[^a-z0-9]/g,"").slice(0,20);
+    await fetch(epURL(),{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({action:"img",id,data:d})});
+    const j=await (await fetch(epURL()+"?img="+id)).json();
+    if(!j.ok||j.data!==d)throw new Error(j.error||"x");
+    IMGC[id]=d;sec.img={id};render();
+  }catch(e){say("이미지를 올리지 못했습니다. 수집 코드가 최신 버전인지 확인해 주세요.",1)}
+}
+
 /* ---------- config / preview / script ---------- */
 function config(){
   const req=$("#reqAll").checked;
   const sections=SECS.map(s=>{
     let list=items.filter(i=>i.sec===s.key&&i.on&&i.text.trim()).map(i=>({type:i.type,text:fill(i.text).trim(),options:i.options?i.options.slice():undefined,required:req}));
     if(s.key==="overall"&&$("#nps").checked)list.push({type:"nps",text:fill(T+"을(를) 친구나 동료에게 추천할 가능성은 얼마나 되나요?"),required:req});
-    return {title:secName(s),items:list};
+    return {title:secName(s),items:list,im:s.img&&s.img.id||"",vd:/^https?:\/\//i.test(s.vd||"")?s.vd:""};
   }).filter(s=>s.items.length);
   return {title:$("#title").value.trim()||"고객 만족도 조사",description:$("#desc").value.trim(),sections};
 }
@@ -418,8 +470,9 @@ function update(){
   const scale=C.sections.reduce((a,s)=>a+s.items.filter(i=>i.type==="scale").length,0);
   $("#summary").innerHTML=`<span>섹션 <b>${C.sections.length}</b></span><span>전체 문항 <b>${total}</b></span><span>7점 척도 <b>${scale}</b></span><span>예상 소요 <b>${Math.max(1,Math.round(total*10/60))}분</b></span>`;
   $("#pv").innerHTML=`<div class="pv-title"><img src="${LOGO||DEFAULT_LOGO}" alt="" style="height:30px;max-width:180px;object-fit:contain;display:block;margin-bottom:10px"><h3>${esc(C.title)}</h3><p>${esc(C.description)}</p></div>`+
-    C.sections.map(s=>`<div class="pv-sec">${esc(s.title)}</div><div class="pv-sec-d">이어서 아래 ${s.items.length}개의 질문에 응답하여 주세요.</div>`+
+    C.sections.map(s=>`<div class="pv-sec">${esc(s.title)}</div><div class="pv-sec-d">이어서 아래 ${s.items.length}개의 질문에 응답하여 주세요.</div>`+(s.vd?vidHTML(s.vd,esc):"")+(s.im?`<div class="pv-img"><img data-pim="${esc(s.im)}" alt="평가 자료 이미지"></div>`:"")+
       s.items.map((q,i)=>`<div class="pv-q"><div class="t">${i+1}. ${esc(q.text)} ${q.required?'<span class="req">*</span>':""}</div>${pvBody(q)}</div>`).join("")).join("");
+  document.querySelectorAll("#pv img[data-pim]").forEach(paintImg);
   applyPv();
   makeLink(C);
 }
@@ -447,7 +500,7 @@ async function encode(obj){
 function hash6(str){let h=2166136261;for(let i=0;i<str.length;i++){h^=str.charCodeAt(i);h=Math.imul(h,16777619)}return (h>>>0).toString(36).slice(0,6).padStart(6,"0")}
 function payload(C){
   const body={t:C.title,d:C.description,o:$("#org").value.trim(),
-    s:C.sections.map(sec=>({t:sec.title,q:sec.items.map(q=>{const o={y:q.type,x:q.text};if(q.options)o.o=q.options;if(q.required)o.r=1;return o})}))};
+    s:C.sections.map(sec=>({t:sec.title,...(sec.im?{im:sec.im}:{}),...(sec.vd?{vd:sec.vd}:{}),q:sec.items.map(q=>{const o={y:q.type,x:q.text};if(q.options)o.o=q.options;if(q.required)o.r=1;return o})}))};
   const now=new Date(),ymd=String(now.getFullYear()).slice(2)+String(now.getMonth()+1).padStart(2,"0")+String(now.getDate()).padStart(2,"0");
   body.id=ymd+"-"+hash6(JSON.stringify(body));
   if(THEME&&THEME!=="#0E2A6B")body.th=THEME;
