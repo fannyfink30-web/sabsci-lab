@@ -355,7 +355,7 @@ function render(){
     const si=SECS.indexOf(s);
     return `<div class="sec" data-sec="${s.key}"><div class="sec-h"><input class="sec-name" value="${esc(secName(s))}" aria-label="섹션 이름" data-sk="name"><span class="row" style="gap:6px;flex-wrap:nowrap"><span class="cnt">${on} / ${list.length}개 선택</span><button class="icon" data-smv="-1" aria-label="섹션 위로" ${si===0?"disabled":""}>↑</button><button class="icon" data-smv="1" aria-label="섹션 아래로" ${si===SECS.length-1?"disabled":""}>↓</button>${s.custom?`<button class="icon" data-sdel aria-label="섹션 삭제">✕</button>`:""}</span></div>
       <div class="smedia"><div class="simg-ed">${s.img?`<img data-pim="${esc(s.img.id)}" alt="섹션 이미지 미리보기"><label class="btn ghost sm" style="cursor:pointer">이미지 바꾸기<input type="file" accept="image/*" data-k="img" hidden></label><button class="btn ghost sm" data-imgdel type="button">이미지 빼기</button><span class="hint" data-imsg style="margin:0"></span>`:`<label class="btn ghost sm" style="cursor:pointer">+ 이미지 넣기<input type="file" accept="image/*" data-k="img" hidden></label><span class="hint" data-imsg style="margin:0">이 섹션 위에 보여 줄 사진·포스터 (선택)</span>`}</div>
-      <input data-k="vd" value="${esc(s.vd||"")}" placeholder="영상·자료 링크 (선택) — 유튜브 주소를 넣으면 설문 안에서 재생됩니다" aria-label="영상 또는 자료 링크"></div>
+      <input data-k="vd" value="${esc(s.vd||"")}" placeholder="영상·이미지 링크 (선택) — 유튜브 주소는 재생되고, 이미지 주소는 바로 보입니다" aria-label="영상 또는 자료 링크"></div>
       ${list.map((i,idx)=>`<div class="item ${i.on?"":"off"}" data-id="${i.id}">
         <input type="checkbox" ${i.on?"checked":""} aria-label="문항 포함" data-k="on">
         <div class="body">
@@ -425,7 +425,9 @@ function vidEmbed(u){u=String(u||"").trim();let m;
   if(m=u.match(/drive\.google\.com\/file\/d\/([\w-]+)/))return "https://drive.google.com/file/d/"+m[1]+"/preview";
   return "";}
 function vidHTML(u,esc){const e=vidEmbed(u);if(e)return `<div class="vwrap"><iframe src="${e}" title="평가 자료 영상" allow="accelerometer; autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen loading="lazy"></iframe></div>`;
-  if(/^https?:\/\//i.test(u))return `<a class="vlink" href="${esc(u)}" target="_blank" rel="noopener">자료 열기 (새 창) ↗</a>`;return "";}
+  if(/^https?:\/\//i.test(u))return `<figure class="simg pv-img"><img data-lim="${esc(u)}" src="${esc(u)}" alt="평가 자료 이미지" referrerpolicy="no-referrer"></figure>`;return "";}
+document.addEventListener("error",e=>{const t=e.target;if(t&&t.matches&&t.matches("img[data-lim]")){const a=document.createElement("a");a.className="vlink";a.href=t.dataset.lim;a.target="_blank";a.rel="noopener";a.textContent="자료 열기 (새 창) ↗";(t.closest("figure")||t).replaceWith(a)}},true);
+document.addEventListener("click",e=>{const t=e.target;if(t&&t.matches&&t.matches(".simg img[data-lim]")&&!document.querySelector(".pv")&&!document.getElementById("pv")){const v=document.createElement("div");v.className="zoomv";v.innerHTML='<img alt="">';v.firstChild.src=t.src;v.onclick=()=>v.remove();document.body.appendChild(v)}});
 /* ---------- 섹션 이미지 ---------- */
 var IMGC={};
 function epURL(){return $("#endpoint").value.trim()}

@@ -350,6 +350,7 @@ const DOMAINS=[
   {code:"ESAT",n:"창업교육 만족도",ref:"교육 만족도 연구 참고",items:["이 교육에 전반적으로 만족한다.","교육 내용이 창업 준비에 실질적으로 도움이 되었다.","강사의 전문성이 높았다.","교육에서 배운 것을 실제로 활용할 수 있다."]}
  ]}
 ];
+DOMAINS.push(DOMAINS.shift());
 const ALL=DOMAINS.flatMap(d=>d.c);
 const DEMO=[
  {c:"D_GEN",x:"성별을 선택해 주세요.",y:"choice",o:["남성","여성"],on:1},
@@ -365,7 +366,7 @@ const DEMO=[
 ];
 
 /* ---------- state ---------- */
-let dom="mine",sid=0;
+let dom="cons",sid=0;
 let S={secs:[],demo:{}};
 const FIELDS=["f_title","f_purpose","f_pi","f_aff","f_mail","f_irb","f_min","f_reward","f_target"];
 function addConstruct(c){
@@ -434,7 +435,7 @@ function renderSecs(){
         <label class="toggle" style="font-size:12.5px"><input type="checkbox" data-k="rn" ${s.rn?"checked":""}> 섹션 안 문항 순서 무작위</label></div>
       <textarea data-k="stim" rows="2" placeholder="상황 제시 지문 (선택) — 예: 아래 광고를 보신 뒤 응답해 주세요." aria-label="상황 제시 지문">${esc(s.stim)}</textarea>
       <div class="simg-ed">${s.img?`<img data-pim="${esc(s.img.id)}" alt="섹션 이미지 미리보기"><div class="stack" style="gap:6px"><span class="hint" style="margin:0">응답자가 이 이미지를 보고 아래 문항에 답합니다.</span><div class="row" style="gap:6px"><label class="btn ghost sm" style="cursor:pointer">이미지 바꾸기<input type="file" accept="image/*" data-k="img" hidden></label><button class="btn ghost sm" data-imgdel type="button">이미지 빼기</button></div></div>`:`<label class="btn ghost sm" style="cursor:pointer">+ 평가할 이미지 넣기<input type="file" accept="image/*" data-k="img" hidden></label><span class="hint" data-imsg style="margin:0">광고·제품·패키지 시안 등 (선택)</span>`}</div>
-      <input data-k="vd" value="${esc(s.vd||"")}" placeholder="영상·자료 링크 (선택) — 유튜브, 비메오, 구글 드라이브 영상은 화면 안에서 재생됩니다" aria-label="영상 또는 자료 링크">
+      <input data-k="vd" value="${esc(s.vd||"")}" placeholder="영상·이미지 링크 (선택) — 유튜브 주소는 재생되고, 이미지 주소는 바로 보입니다" aria-label="영상 또는 자료 링크">
       ${s.items.map((it,ii)=>`<div class="it" data-i="${ii}"><span class="c">${esc(s.prefix)}${ii+1}${it.rev?"_R":""}</span>
         <div style="display:flex;flex-direction:column;gap:4px;min-width:0"><input value="${esc(fill(it.text))}" data-ik="text" aria-label="문항">${it.l?`<div class="row" style="gap:6px;flex-wrap:nowrap"><input value="${esc(it.l[0])}" data-ik="l0" aria-label="왼쪽 끝(1점) 표현" style="font-size:12.5px;padding:4px 8px"><span class="hint">↔</span><input value="${esc(it.l[1])}" data-ik="l1" aria-label="오른쪽 끝(7점) 표현" style="font-size:12.5px;padding:4px 8px"></div>`:""}${it.y==="text"?`<span class="hint">숫자·단답 응답</span>`:""}</div>
         <label class="rev"><input type="checkbox" data-ik="rev" ${it.rev?"checked":""}> 역문항</label>
@@ -675,7 +676,9 @@ function vidEmbed(u){u=String(u||"").trim();let m;
   if(m=u.match(/drive\.google\.com\/file\/d\/([\w-]+)/))return "https://drive.google.com/file/d/"+m[1]+"/preview";
   return "";}
 function vidHTML(u,esc){const e=vidEmbed(u);if(e)return `<div class="vwrap"><iframe src="${e}" title="평가 자료 영상" allow="accelerometer; autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen loading="lazy"></iframe></div>`;
-  if(/^https?:\/\//i.test(u))return `<a class="vlink" href="${esc(u)}" target="_blank" rel="noopener">자료 열기 (새 창) ↗</a>`;return "";}
+  if(/^https?:\/\//i.test(u))return `<figure class="simg pv-img"><img data-lim="${esc(u)}" src="${esc(u)}" alt="평가 자료 이미지" referrerpolicy="no-referrer"></figure>`;return "";}
+document.addEventListener("error",e=>{const t=e.target;if(t&&t.matches&&t.matches("img[data-lim]")){const a=document.createElement("a");a.className="vlink";a.href=t.dataset.lim;a.target="_blank";a.rel="noopener";a.textContent="자료 열기 (새 창) ↗";(t.closest("figure")||t).replaceWith(a)}},true);
+document.addEventListener("click",e=>{const t=e.target;if(t&&t.matches&&t.matches(".simg img[data-lim]")&&!document.querySelector(".pv")&&!document.getElementById("pv")){const v=document.createElement("div");v.className="zoomv";v.innerHTML='<img alt="">';v.firstChild.src=t.src;v.onclick=()=>v.remove();document.body.appendChild(v)}});
 /* ---------- 섹션 이미지 ---------- */
 var IMGC={};
 function epURL(){return $("#endpoint").value.trim()}

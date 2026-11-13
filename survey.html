@@ -103,7 +103,9 @@ function vidEmbed(u){u=String(u||"").trim();let m;
   if(m=u.match(/drive\.google\.com\/file\/d\/([\w-]+)/))return "https://drive.google.com/file/d/"+m[1]+"/preview";
   return "";}
 function vidHTML(u,esc){const e=vidEmbed(u);if(e)return `<div class="vwrap"><iframe src="${e}" title="평가 자료 영상" allow="accelerometer; autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen loading="lazy"></iframe></div>`;
-  if(/^https?:\/\//i.test(u))return `<a class="vlink" href="${esc(u)}" target="_blank" rel="noopener">자료 열기 (새 창) ↗</a>`;return "";}
+  if(/^https?:\/\//i.test(u))return `<figure class="simg pv-img"><img data-lim="${esc(u)}" src="${esc(u)}" alt="평가 자료 이미지" referrerpolicy="no-referrer"></figure>`;return "";}
+document.addEventListener("error",e=>{const t=e.target;if(t&&t.matches&&t.matches("img[data-lim]")){const a=document.createElement("a");a.className="vlink";a.href=t.dataset.lim;a.target="_blank";a.rel="noopener";a.textContent="자료 열기 (새 창) ↗";(t.closest("figure")||t).replaceWith(a)}},true);
+document.addEventListener("click",e=>{const t=e.target;if(t&&t.matches&&t.matches(".simg img[data-lim]")&&!document.querySelector(".pv")&&!document.getElementById("pv")){const v=document.createElement("div");v.className="zoomv";v.innerHTML='<img alt="">';v.firstChild.src=t.src;v.onclick=()=>v.remove();document.body.appendChild(v)}});
 var IMGS={};
 function loadImg(id){if(!IMGS[id])IMGS[id]=fetch(window.__EP+"?img="+encodeURIComponent(id)).then(r=>r.json()).then(j=>j.ok?j.data:"").catch(()=>"");return IMGS[id]}
 function paintImgs(){document.querySelectorAll("img[data-im]").forEach(im=>{im.onerror=()=>{const g=im.closest("figure");if(g)g.hidden=true};loadImg(im.dataset.im).then(d=>{if(d)im.src=d;else{const g=im.closest("figure");if(g)g.hidden=true}});im.onclick=()=>{if(!im.src)return;const v=document.createElement("div");v.className="zoomv";v.innerHTML='<img alt="">';v.firstChild.src=im.src;v.onclick=()=>v.remove();document.body.appendChild(v)}})}
