@@ -211,7 +211,7 @@ body,h1,h2,h3,p,label,legend,.t{word-break:keep-all;overflow-wrap:break-word}
         <b style="font-size:13.5px;color:var(--navy)">+ 응답자 정보 문항 추가</b>
         <input id="cd_x" placeholder="문항 예: 운동 경력을 선택해 주세요." aria-label="추가할 문항">
         <div class="row" style="gap:8px;flex-wrap:wrap">
-          <select id="cd_y" aria-label="응답 형식"><option value="choice">하나 고르기</option><option value="checkbox">여러 개 고르기</option><option value="text">직접 적기</option></select>
+          <select id="cd_y" aria-label="응답 형식"><option value="choice">하나 고르기</option><option value="checkbox">여러 개 고르기</option><option value="text">직접 적기</option><option value="file">파일 첨부 (사진·한글·PDF)</option></select>
           <input id="cd_o" placeholder="선택지를 쉼표로: 1년 미만, 1~3년, 3년 이상" aria-label="선택지" style="flex:1;min-width:200px">
         </div>
         <div class="row" style="gap:8px"><button class="btn sm" id="cd_add" type="button">문항 추가</button><span class="hint" id="cd_msg"></span></div>
@@ -475,7 +475,7 @@ function renderAttSel(){
 }
 function cdCode(){let n=1;const used=new Set((S.cdemo||[]).map(d=>d.c));while(used.has("D_ADD"+n))n++;return "D_ADD"+n}
 function renderCDemo(){
-  const L=S.cdemo||(S.cdemo=[]);const TY={choice:"하나 고르기",checkbox:"여러 개 고르기",text:"직접 적기"};
+  const L=S.cdemo||(S.cdemo=[]);const TY={choice:"하나 고르기",checkbox:"여러 개 고르기",text:"직접 적기",file:"파일 첨부 · 사진·한글·PDF, 8MB 이하, 선택 사항"};
   $("#cdemo").innerHTML=L.map((d,i)=>`<div class="cditem"><div class="top"><input type="checkbox" data-i="${i}" class="cd_on" ${d.on!==false?"checked":""} aria-label="포함"><input type="text" data-i="${i}" class="cd_x" value="${esc(d.x)}" aria-label="문항"><span class="code">${d.c}</span><button class="x" data-i="${i}" title="삭제" aria-label="삭제">✕</button></div>
     <div class="opts">${TY[d.y]||""}${d.o&&d.o.length?" · "+d.o.map(esc).join(" / "):""}</div></div>`).join("");
   $$("#cdemo .cd_on").forEach(el=>el.onchange=()=>{L[+el.dataset.i].on=el.checked;update()});
@@ -502,7 +502,7 @@ function survey(){
     if(s.rn)o.rn=1;
     return o;
   }).filter(s=>s.q.length);
-  const demo=DEMO.filter(d=>S.demo[d.c]).concat((S.cdemo||[]).filter(d=>d.on!==false&&d.x.trim())).map(d=>{const o={y:d.y,x:fill(d.x).trim(),r:1,c:d.c,k:"응답자 정보"};if(d.o&&d.y!=="text")o.o=d.o.slice();return o});
+  const demo=DEMO.filter(d=>S.demo[d.c]).concat((S.cdemo||[]).filter(d=>d.on!==false&&d.x.trim())).map(d=>{const o={y:d.y,x:fill(d.x).trim(),r:d.y==="file"?0:1,c:d.c,k:"응답자 정보"};if(d.o&&d.y!=="text"&&d.y!=="file")o.o=d.o.slice();return o});
   if(demo.length)secs.push({t:hide?`PART ${secs.length+1}`:"응답자 정보",q:demo});
   secs.forEach(s=>s.q.forEach(q=>{if(!q.v)delete q.v}));
   const P={m:"r",t:$("#f_title").value.trim()||"연구 설문",d:$("#f_desc").value.trim(),o:[$("#f_aff").value.trim(),$("#f_pi").value.trim()&&("연구책임자 "+$("#f_pi").value.trim())].filter(Boolean).join(" · "),s:secs};
@@ -520,9 +520,10 @@ function renderPreview(P){
   const qh=(q,no)=>{
     let b="";
     if(q.y==="scale")b=`<div class="sc">${[1,2,3,4,5,6,7].map(k=>`<span>${k}</span>`).join("")}</div><div class="ends"><span>1 ${esc(q.l?q.l[0]:"전혀 그렇지 않다")}</span><span>7 ${esc(q.l?q.l[1]:"매우 그렇다")}</span></div>`;
+    else if(q.y==="file")b=`<div class="op" style="border-style:dashed">📎 파일 선택 (사진·한글·PDF, 8MB 이하)</div>`;
     else if(q.o)b=q.o.map(o=>`<div class="op">${esc(o)}</div>`).join("");
     else b=`<div class="ln"></div>`;
-    return `<div class="c"><p class="t">${no}. ${esc(q.x)} <span class="req">*</span><span class="tag">${esc(q.c)}</span></p>${b}</div>`;
+    return `<div class="c"><p class="t">${no}. ${esc(q.x)} ${q.r===0?"":'<span class="req">*</span>'}<span class="tag">${esc(q.c)}</span></p>${b}</div>`;
   };
   $("#pv").innerHTML=`<div class="c cover"><img src="${LOGO||DEFAULT_LOGO}" alt="" style="height:28px;max-width:170px;object-fit:contain;display:block;margin-bottom:8px">${P.o?`<p class="org">${esc(P.o)}</p>`:""}<h3>${esc(P.t)}</h3><p class="d">${esc(P.d)}</p>${P.irb?`<p class="d" style="font-size:11.5px;margin-top:6px">IRB 승인번호 ${esc(P.irb)}</p>`:""}</div>`+
     (P.c?`<div class="sb">연구 참여 동의서</div><div class="c" style="border-radius:0 0 10px 10px;margin-top:-10px"><p class="d" style="color:#17213a">${esc(P.c)}</p></div><div class="c"><p class="t">위 내용을 읽고 이해하였으며, 연구에 참여하는 데 동의하십니까? <span class="req">*</span></p><div class="op">네, 동의합니다.</div><div class="op">아니요, 동의하지 않습니다.</div></div>`:"")+
@@ -531,7 +532,7 @@ function renderPreview(P){
 }
 let cbRows=[];
 function renderCodebook(P){
-  const TY={scale:"1~7점",choice:"단일선택",checkbox:"복수선택",text:"단답",paragraph:"서술"};
+  const TY={scale:"1~7점",choice:"단일선택",checkbox:"복수선택",text:"단답",paragraph:"서술",file:"파일첨부"};
   cbRows=[];
   if(P.c)cbRows.push(["CONSENT","동의서","연구 참여 동의","","","",""]);
   P.s.forEach((s,si)=>s.q.forEach(q=>cbRows.push([q.c,`${si+1}. ${s.t}`,q.x,q.k||"",q.v?"역문항":"",q.n||(q.o?q.o.join(" / "):"")||(q.l?`1=${q.l[0]}, 7=${q.l[1]}`:""),TY[q.y]||q.y])));
@@ -709,12 +710,12 @@ async function uploadImg(sec,file,el){
 
 /* ---------- 응답자 정보 직접 추가 ---------- */
 (function(){const y=$("#cd_y"),o=$("#cd_o"),msg=$("#cd_msg");
-  y.onchange=()=>{o.hidden=y.value==="text"};
+  y.onchange=()=>{o.hidden=y.value==="text"||y.value==="file"};
   $("#cd_add").onclick=()=>{const x=$("#cd_x").value.trim();msg.textContent="";msg.style.color="";
     if(!x){msg.textContent="문항을 적어 주세요.";msg.style.color="#c0392b";return}
     const opts=o.value.split(/[,，\n]/).map(t=>t.trim()).filter(Boolean);
-    if(y.value!=="text"&&opts.length<2){msg.textContent="선택지를 2개 이상 쉼표로 나눠 적어 주세요.";msg.style.color="#c0392b";return}
-    (S.cdemo||(S.cdemo=[])).push({c:cdCode(),x,y:y.value,o:y.value==="text"?undefined:opts,on:true});
+    if(y.value!=="text"&&y.value!=="file"&&opts.length<2){msg.textContent="선택지를 2개 이상 쉼표로 나눠 적어 주세요.";msg.style.color="#c0392b";return}
+    (S.cdemo||(S.cdemo=[])).push({c:cdCode(),x,y:y.value,o:(y.value==="text"||y.value==="file")?undefined:opts,on:true});
     $("#cd_x").value="";o.value="";renderCDemo();update();msg.textContent="추가했습니다.";}
 })();
 /* ---------- 상태 저장·불러오기 (내 설문함) ---------- */

@@ -80,6 +80,12 @@ footer{text-align:center;font-size:12px;color:var(--muted);margin-top:8px}
 .hub b{font-size:18px;color:var(--navy)}
 .hub span.d{font-size:13.5px;color:var(--muted)}
 .hub .go{margin-top:auto;font-weight:700;color:var(--navy);font-size:14px}
+.file{border:2px dashed var(--line);border-radius:10px;padding:14px;background:var(--bg)}
+.file input[type=file]{width:100%;font:inherit}
+.file .fh{font-size:12.5px;color:var(--muted);margin:8px 0 0}
+.file .fn{margin-top:8px;font-weight:700;color:var(--navy);word-break:break-all}
+.file .fx{margin-left:8px;font:inherit;font-size:12.5px;cursor:pointer;border:1px solid var(--line);background:#fff;border-radius:6px;padding:2px 8px}
+.file .fe{color:var(--red);font-size:13px;margin-top:6px}
 .hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 body,h1,h2,h3,p,label,legend,.t{word-break:keep-all;overflow-wrap:break-word}
@@ -131,7 +137,7 @@ async function decode(hash){
 }
 function fail(msg){app.innerHTML=`<div class="card cover"><h1>설문을 열 수 없습니다</h1><p class="desc">${esc(msg)}</p></div>`}
 
-let S,ans=[],ord=[],page=-1,started=Date.now(),consented=false;
+let S,ans=[],ord=[],page=-1,started=Date.now(),consented=false,RID="";
 const store={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
 
 async function init(){
@@ -158,6 +164,26 @@ async function init(){
   render();
 }
 
+/* 파일 첨부: 사진은 브라우저에서 줄이고, 한글·PDF는 그대로 보냅니다 */
+const FILE_MAX=8*1024*1024, FILE_EXT=/\.(jpe?g|png|webp|gif|heic|heif|hwp|hwpx|pdf)$/i;
+function fmtSize(n){return n>=1048576?(n/1048576).toFixed(1)+"MB":Math.max(1,Math.round(n/1024))+"KB"}
+function toB64(blob){return new Promise((res,rej)=>{const fr=new FileReader();fr.onload=()=>res(String(fr.result).split(",")[1]||"");fr.onerror=()=>rej(fr.error);fr.readAsDataURL(blob)})}
+function shrinkImage(file){return new Promise(res=>{
+  if(!/^image\/(jpeg|png|webp)$/.test(file.type)){res(null);return}
+  const u=URL.createObjectURL(file),im=new Image();
+  im.onload=()=>{URL.revokeObjectURL(u);const m=1600,k=Math.min(1,m/Math.max(im.width,im.height)),c=document.createElement("canvas");
+    c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);c.getContext("2d").drawImage(im,0,0,c.width,c.height);
+    c.toBlob(b=>res(b&&b.size<file.size?b:null),"image/jpeg",.82)};
+  im.onerror=()=>{URL.revokeObjectURL(u);res(null)};im.src=u})}
+async function pickFile(file){
+  if(!file)return {err:"파일을 선택해 주세요."};
+  if(!(FILE_EXT.test(file.name)||/^image\//.test(file.type)))return {err:"사진(JPG·PNG), 한글(HWP·HWPX), PDF 파일만 올릴 수 있습니다."};
+  let blob=file,name=file.name,type=file.type||"application/octet-stream";
+  const sm=await shrinkImage(file);
+  if(sm){blob=sm;type="image/jpeg";name=name.replace(/\.[^.]+$/,"")+".jpg"}
+  if(blob.size>FILE_MAX)return {err:"파일이 너무 큽니다("+fmtSize(blob.size)+"). 8MB 이하 파일을 올려 주세요."};
+  return {f:{name,type,size:blob.size,data:await toB64(blob)}};
+}
 function total(){return S.s.reduce((a,s)=>a+s.q.length,0)}
 function render(){
   const n=S.s.length;
@@ -214,6 +240,11 @@ function qHTML(q,i,no){
       return `<label class="opt"><input type="${type}" name="${id}" value="${esc(o)}" ${checked?"checked":""}><span>${esc(o)}</span></label>
         ${isOther?`<div class="other ${checked?"show":""}"><input type="text" data-other="${id}" placeholder="직접 입력" value="${esc(otherVal)}" aria-label="기타 내용"></div>`:""}`;
     }).join("");
+  }else if(q.y==="file"){
+    body=`<div class="file"><input type="file" id="${id}" accept="image/*,.hwp,.hwpx,.pdf" aria-labelledby="${id}_t">
+      <p class="fh">사진(JPG·PNG), 한글(HWP·HWPX), PDF · 파일 1개 · 8MB 이하${q.r?"":" · 선택 사항"}</p>
+      <div class="fn" id="${id}_n">${v&&v.name?esc(v.name)+" ("+fmtSize(v.size)+") <button type=\"button\" class=\"fx\" id=\"${id}_x\">지우기</button>":""}</div>
+      <div class="fe" id="${id}_e" role="alert"></div></div>`;
   }else if(q.y==="text"){
     body=q.c==="D_BIRTH"?`<input type="text" id="${id}" value="${esc(v||"")}" inputmode="numeric" maxlength="4" placeholder="예: 1995" style="max-width:160px" aria-labelledby="${id}_t">`:`<input type="text" id="${id}" value="${esc(v||"")}" aria-labelledby="${id}_t">`;
   }else{
@@ -239,6 +270,13 @@ function bind(sec){
         c.classList.remove("err");prog();
       };
       c.querySelectorAll("input").forEach(x=>x.addEventListener(x.type==="text"?"input":"change",read));
+    }else if(q.y==="file"){
+      const inp=document.getElementById(id),nm=document.getElementById(id+"_n"),er=document.getElementById(id+"_e");
+      const show=()=>{const v=ans[page][i];nm.innerHTML=v?esc(v.name)+" ("+fmtSize(v.size)+') <button type="button" class="fx" id="'+id+'_x">지우기</button>':"";const x=document.getElementById(id+"_x");if(x)x.onclick=()=>{ans[page][i]=null;inp.value="";show();prog()}};
+      show();
+      inp.onchange=async()=>{er.textContent="";const f=inp.files[0];if(!f)return;nm.textContent="처리 중…";
+        const r=await pickFile(f);if(r.err){er.textContent=r.err;ans[page][i]=null;inp.value="";show();prog();return}
+        ans[page][i]=r.f;c.classList.remove("err");show();prog()};
     }else{
       const el=document.getElementById(id);el.oninput=()=>{ans[page][i]=el.value.trim()||null;c.classList.remove("err");prog()};
     }
@@ -256,29 +294,39 @@ async function submit(){
   btn.disabled=true;btn.textContent="제출 중…";err.hidden=true;
   const headers=[],answers=[],notes=[],codebook=[];
   const research=S.m==="r";
-  const TY={scale:"1~7점",nps:"0~10점",choice:"단일선택",checkbox:"복수선택",text:"단답",paragraph:"서술"};
+  const TY={scale:"1~7점",nps:"0~10점",choice:"단일선택",checkbox:"복수선택",text:"단답",paragraph:"서술",file:"파일첨부"};
+  const files=[];
   if(research&&S.c){headers.push("CONSENT");answers.push("동의");notes.push("연구 참여 동의");codebook.push(["CONSENT","동의서","연구 참여 동의","","","",""])}
   S.s.forEach((sec,si)=>sec.q.forEach((q,qi)=>{
     const h=research&&q.c?q.c:`${si+1}-${qi+1}. ${q.x}`;
-    headers.push(h);answers.push(ans[si][qi]??"");notes.push(q.x);
+    headers.push(h);const av=ans[si][qi];if(q.y==="file"&&av&&av.data){answers.push(av.name);files.push({col:headers.length-1,name:av.name,type:av.type,data:av.data})}else answers.push(av??"");notes.push(q.x);
     codebook.push([h,`${si+1}. ${sec.t}`,q.x,q.k||"",q.v?"역문항":"",q.n||(q.o?q.o.join(" / "):"")||(q.l?`1=${q.l[0]}, 7=${q.l[1]}`:""),TY[q.y]||q.y]);
   }));
   headers.push(research?"DURATION":"응답 소요(초)");answers.push(Math.round((Date.now()-started)/1000));notes.push("응답 소요 시간(초)");
   codebook.push([research?"DURATION":"응답 소요(초)","","응답 소요 시간(초)","","","","숫자"]);
   const payload={id:S.id,title:S.t,headers,answers,hp:(document.getElementById("hp")||{}).value||""};
+  if(files.length){RID=RID||(Date.now().toString(36)+Math.random().toString(36).slice(2,8));payload.rid=RID;payload.files=files}
   if(research){payload.notes=notes;payload.codebook=codebook}
   const body=JSON.stringify(payload);
   let ok=false;
   // 한 번만 보냅니다(중복 기록 방지). 네트워크가 끊기면 오류가 나고, 다시 제출할 수 있습니다.
   try{await fetch(S.e,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain;charset=utf-8"},body});ok=true}
   catch(e){ok=false}
+  // 파일이 있으면 서버가 실제로 저장했는지 확인합니다(최대 약 60초). 같은 제출 번호로 다시 보내도 중복 기록되지 않습니다.
+  if(ok&&files.length){
+    btn.textContent="파일 저장 확인 중…";ok=false;
+    for(let t=0;t<30&&!ok;t++){
+      await new Promise(r=>setTimeout(r,2000));
+      try{const j=await (await fetch(S.e+"?ack="+encodeURIComponent(RID))).json();if(j&&j.ok)ok=true}catch(e){}
+    }
+  }
   if(ok){
     store.set("sv_done_"+S.id,"1");
     app.innerHTML=`<div class="prog"><div class="top"><span class="where">응답 완료</span><span class="pct">100% 완료</span></div><div class="progress" aria-hidden="true"><i style="width:100%"></i></div></div><div class="card cover done"><p class="big">응답해 주셔서 감사합니다</p><p class="desc">소중한 의견이 정상적으로 제출되었습니다.</p></div>`;
     footer();window.scrollTo(0,0);
   }else{
     btn.disabled=false;btn.textContent="다시 제출하기";
-    err.hidden=false;err.textContent="제출하지 못했습니다. 인터넷 연결을 확인한 뒤 ‘다시 제출하기’를 눌러 주세요. 작성하신 내용은 그대로 남아 있습니다.";
+    err.hidden=false;err.textContent="제출 또는 파일 저장을 확인하지 못했습니다. 인터넷 연결을 확인한 뒤 ‘다시 제출하기’를 눌러 주세요. 작성하신 내용과 파일은 그대로 남아 있고, 다시 눌러도 중복 기록되지 않습니다.";
   }
 }
 function consentPage(){
